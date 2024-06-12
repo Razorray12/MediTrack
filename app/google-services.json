@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "297419995803",
+    "firebase_url": "https://hospital-patients-b4458-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "hospital-patients-b4458",
+    "storage_bucket": "hospital-patients-b4458.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:297419995803:android:2544425699c18e75e0e43e",
+        "android_client_info": {
+          "package_name": "com.example.hospitalpatient"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXSRWXJUk4WgfN5OtVzqCNdGZ0pwZfJdY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:297419995803:android:284442764978233de0e43e",
+        "android_client_info": {
+          "package_name": "com.example.meditrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXSRWXJUk4WgfN5OtVzqCNdGZ0pwZfJdY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/information_scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/linear_information"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/profile_avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/profile_avatar"
+            tools:ignore="ContentDescription,ImageContrastCheck" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/first_name"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_first_name"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_first_name"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="textPersonName"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/middle_name"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_middle_name"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_middle_name"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="textPersonName"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/last_name"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_last_name"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_last_name"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="textPersonName"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/phoneNumber"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_phone_name"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_phone"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="phone"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+        <TextView
+            android:id="@+id/textViewSex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/sex1"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/handles" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/sex_layout">
+
+            <CheckBox
+                android:id="@+id/checkBoxFemale"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:enabled="false"
+                android:buttonTint="@color/handles"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="@string/female"
+                android:layout_weight="1"
+                android:textColor="@color/handles"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:ignore="RtlHardcoded,VisualLintButtonSize" />
+
+            <CheckBox
+                android:id="@+id/checkBoxMale"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/handles"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:fontFamily="@font/open_sans_semibold"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginStart="120dp"
+                android:text="@string/male"
+                android:textColor="@color/handles"
+                tools:ignore="VisualLintButtonSize" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/birthDate"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_birthdate"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_birthDate"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="date"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/room_for_add"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_room"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_room"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="date"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:importantForAutofill="no"
+            android:text="@string/diagnosis"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_diagnosis"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_diagnosis"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:importantForAutofill="no"
+            android:text="@string/allergies"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/text_allergies"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_allergies"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/layout_for_add_allergies"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/button_add_allergies"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/add_edittext"
+                app:tint="@color/handles"
+                tools:ignore="ContentDescription,TouchTargetSizeCheck" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="20"/>
+
+            <ImageButton
+                android:id="@+id/button_remove_allergies"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginEnd="10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:importantForAccessibility="no"
+                android:src="@drawable/remove_edittext"
+                app:tint="@color/handles"
+                tools:ignore="ContentDescription,TouchTargetSizeCheck" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:importantForAutofill="no"
+            android:text="@string/medications"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/text_medications"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/custom_text"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/edit_medications"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:visibility="gone"
+            android:background="@drawable/custom_text_focused"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:textColor="@color/handles"
+            android:textColorHighlight="@color/highlights"
+            android:textCursorDrawable="@drawable/custom_cursor"
+            tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/layout_for_add_medications"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/button_add_medications"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/add_edittext"
+                app:tint="@color/handles"
+                tools:ignore="ContentDescription,TouchTargetSizeCheck" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="20"/>
+
+            <ImageButton
+                android:id="@+id/button_remove_medications"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginEnd="10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:importantForAccessibility="no"
+                android:src="@drawable/remove_edittext"
+                app:tint="@color/handles"
+                tools:ignore="ContentDescription,TouchTargetSizeCheck" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/button_plus_signs"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_input_add"
+                app:tint="@color/handles"
+                tools:ignore="ContentDescription,TouchTargetSizeCheck,SpeakableTextPresentCheck" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:importantForAutofill="no"
+                android:text="@string/vitalsigns"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linear_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:text="@string/temperature"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+
+            <TextView
+                android:id="@+id/text_temperature"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="@drawable/custom_text"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+
+            <EditText
+                android:id="@+id/edit_vitalsigns"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:visibility="gone"
+                android:background="@drawable/custom_text_focused"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:inputType="text"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textColorHighlight="@color/highlights"
+                android:textCursorDrawable="@drawable/custom_cursor"
+                tools:ignore="Autofill,LabelFor,RtlSymmetry,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:importantForAutofill="no"
+                android:text="@string/hear_rate"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_chss"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="@drawable/custom_text"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+
+            <EditText
+                android:id="@+id/edit_vitalsigns1"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:visibility="gone"
+                android:background="@drawable/custom_text_focused"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:inputType="text"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textColorHighlight="@color/highlights"
+                android:textCursorDrawable="@drawable/custom_cursor"
+                tools:ignore="Autofill,LabelFor,RtlSymmetry,VisualLintTextFieldSize" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:importantForAutofill="no"
+                android:text="@string/respiratory_rate"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_respiratory"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="@drawable/custom_text"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+
+            <EditText
+                android:id="@+id/edit_vitalsigns2"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:visibility="gone"
+                android:background="@drawable/custom_text_focused"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:inputType="text"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textColorHighlight="@color/highlights"
+                android:textCursorDrawable="@drawable/custom_cursor"
+                tools:ignore="Autofill,LabelFor,RtlSymmetry,VisualLintTextFieldSize" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:importantForAutofill="no"
+                android:text="@string/blood_pressure"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_ad"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="@drawable/custom_text"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+
+            <EditText
+                android:id="@+id/edit_vitalsigns3"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:visibility="gone"
+                android:background="@drawable/custom_text_focused"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:inputType="text"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textColorHighlight="@color/highlights"
+                android:textCursorDrawable="@drawable/custom_cursor"
+                tools:ignore="Autofill,LabelFor,RtlSymmetry,VisualLintTextFieldSize" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:importantForAutofill="no"
+                android:text="@string/saturation"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_saturation"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="@drawable/custom_text"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+
+            <EditText
+                android:id="@+id/edit_vitalsigns4"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:visibility="gone"
+                android:background="@drawable/custom_text_focused"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:inputType="text"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textColorHighlight="@color/highlights"
+                android:textCursorDrawable="@drawable/custom_cursor"
+                tools:ignore="Autofill,LabelFor,RtlSymmetry,VisualLintTextFieldSize" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:importantForAutofill="no"
+                android:text="@string/glucose"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_glucose"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="@drawable/custom_text"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+
+            <EditText
+                android:id="@+id/edit_vitalsigns5"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:visibility="gone"
+                android:background="@drawable/custom_text_focused"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:inputType="text"
+                android:paddingStart="8dp"
+                android:textColor="@color/handles"
+                android:textColorHighlight="@color/highlights"
+                android:textCursorDrawable="@drawable/custom_cursor"
+                tools:ignore="Autofill,LabelFor,RtlSymmetry,VisualLintTextFieldSize" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/delete_patient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:importantForAutofill="no"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/red"
+            android:text="@string/delete_patient"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

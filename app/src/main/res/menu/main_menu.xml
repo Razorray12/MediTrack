@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_menu">
+    <item
+        android:id="@+id/action_add"
+        android:title="@string/add"
+        android:icon="@drawable/add"
+        app:showAsAction="ifRoom"
+        android:background="@drawable/ripple_effect"/>
+
+    <item
+        android:id="@+id/action_edit"
+        android:title="@string/edit"
+        android:icon="@drawable/edit"
+        app:showAsAction="ifRoom"
+        android:visible="false"
+        android:background="@drawable/ripple_effect"/>
+    <item
+        android:id="@+id/action_close_edit"
+        android:icon="@drawable/close"
+        app:showAsAction="ifRoom"
+        android:visible="false"
+        android:background="@drawable/close_save"/>
+
+    <item
+        android:id="@+id/action_close_edit1"
+        android:icon="@drawable/close"
+        app:showAsAction="ifRoom"
+        android:visible="false"
+        android:background="@drawable/close_save"/>
+</menu>

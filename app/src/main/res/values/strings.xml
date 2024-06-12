@@ -1,0 +1,71 @@
+<resources>
+    <string name="app_name">MediTrack</string>
+    <string name="auth">Авторизация</string>
+    <string name="login">Войти</string>
+    <string name="password">Пароль</string>
+    <string name="email">Эл.почта</string>
+    <string name="register"><u>Зарегистрироваться</u></string>
+    <string name="register1">Зарегистрироваться</string>
+    <string name="noacc">Еще нет аккаунта?</string>
+    <string name="registration">Регистрация</string>
+    <string name="first_name">Имя</string>
+    <string name="last_name">Фамилия</string>
+    <string name="middle_name">Отчество</string>
+    <string name="experience">Стаж</string>
+    <string name="specialization">Специализация</string>
+    <string name="profession">Должность</string>
+    <string name="nurse">Медсестра</string>
+    <string name="doctor">Доктор</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome!"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search">Поиск</string>
+    <string name="add">add</string>
+    <string name="sex">Пол:</string>
+    <string name="room">Палата:</string>
+    <string name="curatorDoctor">Лечащий врач:</string>
+    <string name="patients">Пациенты</string>
+    <string name="favorite">Избранные</string>
+    <string name="profile">Профиль</string>
+    <string name="edit">Редактировать</string>
+    <string name="birthDate">Дата рождения:ДД.ММ.ГГ</string>
+    <string name="diagnosis">Диагноз</string>
+    <string name="allergies">Аллергии</string>
+    <string name="sex1">Пол</string>
+    <string name="male">Мужчина</string>
+    <string name="female">Женщина</string>
+    <string name="phoneNumber">Контактный номер телефона</string>
+    <string name="vitalsigns">Жизненные показатели</string>
+    <string name="delete_account">Удалить аккаунт</string>
+    <string name="exit">Выйти</string>
+    <string name="alertsubmit">Вы действительно хотите выйти из аккаунта?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="submit_exit">Подтверждение выхода</string>
+    <string name="submit_delete">Подтверждение удаления</string>
+    <string name="submit_delete_text">Вы действительно хотите удалить свой аккаунт?</string>
+    <string name="temperature">Температура</string>
+    <string name="hear_rate">ЧСС</string>
+    <string name="respiratory_rate">Частота дыхания</string>
+    <string name="blood_pressure">Артериальное давление</string>
+    <string name="saturation">Сатурация</string>
+    <string name="glucose">Уровень глюкозы</string>
+    <string name="medications">Лекарства</string>
+    <string name="room_for_add">Палата</string>
+    <string name="delete_patient">Удалить пациента</string>
+    <string name="delete_alert_patient">Вы действительно хотите удалить информацию о пациенте?</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+</resources>
