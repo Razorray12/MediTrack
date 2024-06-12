@@ -19,6 +19,7 @@ import java.util.Random
 
 class SelectedPatientAdapter(var context: Context, patients: ArrayList<Patient>) :
     RecyclerView.Adapter<PatientViewHolder>() {
+    private var listener: OnItemClickListener? = null
     var patients: ArrayList<Patient>
     var menAvatars: IntArray =
         intArrayOf(R.drawable.img_2, R.drawable.img_3, R.drawable.img_6, R.drawable.img_8)
@@ -53,6 +54,11 @@ class SelectedPatientAdapter(var context: Context, patients: ArrayList<Patient>)
             val randomIndex = Random().nextInt(womenAvatars.size)
 
             holder.avatar.setImageResource(womenAvatars[randomIndex])
+        }
+        holder.itemView.setOnClickListener {
+            if (listener != null) {
+                listener!!.onItemClick(holder.getAdapterPosition())
+            }
         }
     }
 
@@ -97,5 +103,12 @@ class SelectedPatientAdapter(var context: Context, patients: ArrayList<Patient>)
             override fun onCancelled(databaseError: DatabaseError) {
             }
         })
+    }
+    interface OnItemClickListener {
+        fun onItemClick(position: Int)
+    }
+
+    fun setOnItemClickListener(listener: OnItemClickListener?) {
+        this.listener = listener
     }
 }

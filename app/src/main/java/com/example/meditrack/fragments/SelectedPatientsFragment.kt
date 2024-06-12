@@ -6,11 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meditrack.R
 import com.example.meditrack.adapters.SelectedPatientAdapter
 import com.example.meditrack.entities.Patient
+import com.example.meditrack.viewmodels.PatientViewModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -18,14 +20,11 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 class SelectedPatientsFragment : Fragment() {
+    private var fragmentSwitchListener: OnFragmentSwitchListener? = null
     private lateinit var recyclerView: RecyclerView
     private var database: DatabaseReference? = null
     var patientAdapter: SelectedPatientAdapter? = null
     var patients: ArrayList<Patient> = ArrayList()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
@@ -41,6 +40,18 @@ class SelectedPatientsFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
 
         patientAdapter = SelectedPatientAdapter(requireContext(), patients)
+
+        patientAdapter?.setOnItemClickListener(object : SelectedPatientAdapter.OnItemClickListener {
+            override fun onItemClick(position: Int) {
+                fragmentSwitchListener?.let {
+                    val clickedPatient: Patient = patients[position]
+                    val patientViewModel: PatientViewModel = ViewModelProvider(requireActivity())[PatientViewModel::class.java]
+                    patientViewModel.selectPatient(clickedPatient)
+                    it.onSwitchToInformationFragment()
+                }
+            }
+        })
+
         recyclerView.adapter = patientAdapter
 
         database!!.addValueEventListener(object : ValueEventListener {
@@ -57,7 +68,13 @@ class SelectedPatientsFragment : Fragment() {
             }
         })
 
-
         return view
+    }
+    interface OnFragmentSwitchListener {
+        fun onSwitchToInformationFragment()
+    }
+
+    fun setOnFragmentSwitchListener(listener: OnFragmentSwitchListener?) {
+        this.fragmentSwitchListener = listener
     }
 }

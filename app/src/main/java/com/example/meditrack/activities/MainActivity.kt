@@ -133,6 +133,27 @@ class MainActivity : AppCompatActivity() {
 
         profileFragment = ProfileFragment()
         selectedPatientsFragment = SelectedPatientsFragment()
+
+        selectedPatientsFragment!!.setOnFragmentSwitchListener(object : SelectedPatientsFragment.OnFragmentSwitchListener {
+            override fun onSwitchToInformationFragment() {
+                val menuItem = menu?.findItem(R.id.action_add)
+                menuItem?.isVisible = false
+                backButton.visibility = View.VISIBLE
+                searchView.visibility = View.GONE
+                nameFragment.text = "Информация"
+                if (!informationFragment.isAdded) {
+                    supportFragmentManager.beginTransaction()
+                        .add(R.id.fragment_container, informationFragment).commit()
+                }
+
+                supportFragmentManager.beginTransaction().hide(currentFragment!!)
+                    .show(informationFragment).commit()
+
+                currentFragment = informationFragment
+
+                invalidateOptionsMenu()
+            }
+        })
         addPatientFragment = AddPatientsFragment()
 
         supportFragmentManager.beginTransaction().add(
@@ -431,7 +452,4 @@ class MainActivity : AppCompatActivity() {
         nameFragment.text = "Пациенты"
     }
 
-    fun setText(text: String?) {
-        nameFragment.text = text
-    }
 }
