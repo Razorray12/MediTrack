@@ -23,6 +23,15 @@
             app:defaultQueryHint="Поиск"
             app:closeIcon="@drawable/close_search" />
 
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/ai_search1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:searchIcon="@drawable/search"
+            app:defaultQueryHint="Поиск"
+            app:closeIcon="@drawable/close_search"
+            android:visibility="gone"/>
+
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/save_button"
             app:srcCompat="@drawable/save"
@@ -74,45 +83,54 @@
         android:layout_weight="1">
     </FrameLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:background="@color/blue"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom">
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/patients"
+            android:layout_width="0dp"
             android:layout_height="65dp"
-            android:background="@color/blue"
-            android:orientation="horizontal"
-            android:layout_gravity="bottom">
+            android:layout_weight="1"
+            android:background="@drawable/ripple_effect"
+            android:contentDescription="@string/patients"
+            app:srcCompat="@drawable/patient_list"
+            tools:ignore="RtlHardcoded,DuplicateSpeakableTextCheck" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/patients"
-                android:layout_width="0dp"
-                android:layout_height="65dp"
-                android:layout_weight="1"
-                android:background="@drawable/ripple_effect"
-                android:contentDescription="@string/patients"
-                app:srcCompat="@drawable/patient_list"
-                tools:ignore="RtlHardcoded,DuplicateSpeakableTextCheck" />
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/added_patients"
+            android:layout_width="0dp"
+            android:layout_height="65dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/favorite"
+            android:background="@drawable/ripple_effect"
+            app:srcCompat="@drawable/person_add"
+            tools:ignore="RtlHardcoded" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/added_patients"
-                android:layout_width="0dp"
-                android:layout_height="65dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/favorite"
-                android:background="@drawable/ripple_effect"
-                app:srcCompat="@drawable/person_add"
-                tools:ignore="RtlHardcoded" />
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/ai_search"
+            android:layout_width="0dp"
+            android:layout_height="65dp"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_effect"
+            android:contentDescription="@string/patients"
+            app:srcCompat="@drawable/library"
+            tools:ignore="RtlHardcoded,DuplicateSpeakableTextCheck" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/profile"
-                android:layout_width="0dp"
-                android:layout_height="65dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/profile"
-                app:srcCompat="@drawable/profile_image"
-                android:background="@drawable/ripple_effect"
-                tools:ignore="RtlHardcoded" />
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/profile"
+            android:layout_width="0dp"
+            android:layout_height="65dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/profile"
+            app:srcCompat="@drawable/profile_image"
+            android:background="@drawable/ripple_effect"
+            tools:ignore="RtlHardcoded" />
 
-
-        </LinearLayout>
+    </LinearLayout>
 
 
 </LinearLayout>

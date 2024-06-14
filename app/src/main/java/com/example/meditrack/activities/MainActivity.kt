@@ -1,5 +1,6 @@
 package com.example.meditrack.activities
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Html
 import android.view.Menu
@@ -17,6 +18,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.example.meditrack.R
+import com.example.meditrack.fragments.AIFragment
 import com.example.meditrack.fragments.AddPatientsFragment
 import com.example.meditrack.fragments.InformationFragment
 import com.example.meditrack.fragments.ProfileFragment
@@ -37,9 +39,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var profileFragment: ProfileFragment
     private lateinit var informationFragment: InformationFragment
     private lateinit var addPatientFragment: AddPatientsFragment
+    private lateinit var aiFragment: AIFragment
     private var menu: Menu? = null
     private lateinit var selectedPatientsFragment: SelectedPatientsFragment
     private lateinit var searchView: SearchView
+    private lateinit var searchView1: SearchView
     private lateinit var nameFragment: TextView
     private lateinit var saveButton: AppCompatImageButton
     private lateinit var saveButton1: AppCompatImageButton
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var backButton: AppCompatImageButton
 
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.enableEdgeToEdge()
@@ -86,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         nameFragment = toolbar.findViewById(R.id.name_fragment)
 
         searchView = findViewById(R.id.action_search)
+        searchView1 = findViewById(R.id.ai_search1)
         saveButton = findViewById(R.id.save_button)
         saveButton1 = findViewById(R.id.save_button1)
         saveButton2 = findViewById(R.id.save_button2)
@@ -100,15 +106,30 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
+        searchView1.setQueryHint(
+            Html.fromHtml(
+                "<font color = \"$hintColor\">" + resources.getString(
+                    R.string.search
+                ) + "</font>"
+            )
+        )
+
         val searchEditText =
             searchView.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
         searchEditText.setTextColor(resources.getColor(R.color.handles))
 
+        val searchEditText1 =
+            searchView1.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
+        searchEditText1.setTextColor(resources.getColor(R.color.handles))
+
         setupSearchView()
+        setupSearchView1()
 
         searchFragment = SearchFragment()
 
         informationFragment = InformationFragment()
+
+        aiFragment = AIFragment()
 
         searchFragment!!.setOnFragmentSwitchListener(object : SearchFragment.OnFragmentSwitchListener {
             override fun onSwitchToInformationFragment() {
@@ -166,12 +187,15 @@ class MainActivity : AppCompatActivity() {
         val patientsImageButton = findViewById<AppCompatImageButton>(R.id.patients)
         addedPatientsImageButton = findViewById(R.id.added_patients)
         val profileImageButton = findViewById<AppCompatImageButton>(R.id.profile)
+        val aiImageButton = findViewById<AppCompatImageButton>(R.id.ai_search)
         patientsImageButton.setColorFilter(ContextCompat.getColor(this, R.color.white))
 
 
         patientsImageButton.setOnClickListener {
+            backButton.setVisibility(View.GONE)
             saveButton.setVisibility(View.GONE)
             saveButton1.setVisibility(View.GONE)
+            saveButton2.setVisibility(View.GONE)
             patientsImageButton.setColorFilter(
                 ContextCompat.getColor(
                     this,
@@ -190,8 +214,15 @@ class MainActivity : AppCompatActivity() {
                     R.color.handles
                 )
             )
+            aiImageButton.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.handles
+                )
+            )
             nameFragment.text = "Пациенты"
             searchView.visibility = View.VISIBLE
+            searchView1.visibility = View.GONE
             if (currentFragment !is SearchFragment) {
                 supportFragmentManager.beginTransaction().hide(currentFragment!!).show(
                     searchFragment!!
@@ -202,6 +233,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         addedPatientsImageButton.setOnClickListener {
+            backButton.setVisibility(View.GONE)
             saveButton.setVisibility(View.GONE)
             addedPatientsImageButton.setColorFilter(
                 ContextCompat.getColor(
@@ -221,8 +253,16 @@ class MainActivity : AppCompatActivity() {
                     R.color.handles
                 )
             )
-            saveButton.setVisibility(View.GONE)
+            aiImageButton.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.handles
+                )
+            )
+            saveButton1.setVisibility(View.GONE)
+            saveButton2.setVisibility(View.GONE)
             searchView.visibility = View.GONE
+            searchView1.visibility = View.GONE
             nameFragment.text = "Добавленные"
             if (currentFragment !is SelectedPatientsFragment) {
                 if (selectedPatientsFragment.isAdded) {
@@ -242,6 +282,8 @@ class MainActivity : AppCompatActivity() {
 
         profileImageButton.setOnClickListener {
             saveButton.setVisibility(View.GONE)
+            saveButton2.setVisibility(View.GONE)
+            backButton.setVisibility(View.GONE)
             showEditButton()
             profileImageButton.setColorFilter(
                 ContextCompat.getColor(
@@ -261,10 +303,16 @@ class MainActivity : AppCompatActivity() {
                     R.color.handles
                 )
             )
+            aiImageButton.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.handles
+                )
+            )
             closeCloseEditButton()
             nameFragment.text = "Профиль"
             searchView.visibility = View.GONE
-
+            searchView1.visibility = View.GONE
             if (currentFragment !is ProfileFragment) {
                 if (profileFragment.isAdded) {
                     supportFragmentManager.beginTransaction().hide(currentFragment!!)
@@ -278,6 +326,54 @@ class MainActivity : AppCompatActivity() {
             }
             if (profileFragment.isVisible) {
                 profileFragment.onHideEditText()
+            }
+        }
+
+        aiImageButton.setOnClickListener {
+            saveButton1.setVisibility(View.GONE)
+            saveButton2.setVisibility(View.GONE)
+            backButton.setVisibility(View.GONE)
+            aiImageButton.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.white
+                )
+            )
+            patientsImageButton.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.handles
+                )
+            )
+            profileImageButton.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.handles
+                )
+            )
+            addedPatientsImageButton.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.handles
+                )
+            )
+            saveButton.setVisibility(View.GONE)
+            searchView.visibility = View.GONE
+            searchView1.visibility = View.VISIBLE
+            nameFragment.text = "Справочник"
+            if (currentFragment !is AIFragment) {
+                if (aiFragment.isAdded) {
+                    supportFragmentManager.beginTransaction().hide(currentFragment!!)
+                        .show(aiFragment).commit()
+                } else {
+                    supportFragmentManager.beginTransaction().hide(currentFragment!!).add(
+                        R.id.fragment_container,
+                        aiFragment,
+                        "ai_fragment"
+                    ).commit()
+                }
+                currentFragment = aiFragment
+                invalidateOptionsMenu()
             }
         }
     }
@@ -307,6 +403,11 @@ class MainActivity : AppCompatActivity() {
         } else if (currentFragment is InformationFragment) {
             menuItemAdd.setVisible(false)
             menuItemEdit.setVisible(true)
+        } else if (currentFragment is AIFragment) {
+            menuItemAdd.setVisible(false)
+            menuItemEdit.setVisible(false)
+            menuItemClose1.setVisible(false)
+            menuItemClose.setVisible(false)
         }
 
         return super.onPrepareOptionsMenu(menu)
@@ -365,6 +466,40 @@ class MainActivity : AppCompatActivity() {
             searchFragment?.showAllPatients()
             false
         }
+    }
+
+    private fun setupSearchView1() {
+        val searchView1 = findViewById<SearchView>(R.id.ai_search1)
+        searchView1.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                val aiFragment =
+                    supportFragmentManager.findFragmentByTag("ai_fragment") as AIFragment?
+
+                aiFragment?.onQueryTextSubmit(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                return false
+            }
+        })
+        searchView1.setOnQueryTextFocusChangeListener { _, hasFocus ->
+            if (!searchView1.isIconified || hasFocus) {
+                nameFragment.visibility = View.GONE
+            } else {
+                nameFragment.visibility = View.VISIBLE
+            }
+        }
+
+        searchView1.setOnCloseListener {
+            searchView1.clearFocus()
+            nameFragment.visibility = View.VISIBLE
+
+            false
+        }
+
+
+
     }
 
     fun setToolbarSaveButtonListener(listener: View.OnClickListener?) {
