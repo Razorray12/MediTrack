@@ -203,7 +203,7 @@ class AIFragment : Fragment() {
 
 
     private fun parseDiseaseSymptomsInfo(content: String): List<Map<String, String>> {
-        val jsonContent = content.trim().removePrefix("```json\n").removeSuffix("\n```")
+        val jsonContent = content.substringAfter("```json").substringBeforeLast("\n```")
 
         val type = object : TypeToken<List<Map<String, String>>>() {}.type
         val diseaseInfoList: List<Map<String, String>> = gson.fromJson(jsonContent, type)
@@ -228,7 +228,7 @@ class AIFragment : Fragment() {
                 } else {
                     fetchDiseaseInfo(request)
                 }
-                //val jsonResponse = gson.toJson(diseaseResponse)
+                val jsonResponse = gson.toJson(diseaseResponse)
 
                 //Log.d("JSON Response", jsonResponse)
                 if (symptoms) {
