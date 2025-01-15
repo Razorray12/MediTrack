@@ -16,24 +16,24 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.meditrack.R
-import com.example.meditrack.ai.DeepSeekApiService
 import com.example.meditrack.ai.DiseaseRequest
 import com.example.meditrack.ai.DiseaseResponse
 import com.example.meditrack.ai.Message
+import com.example.meditrack.ai.MistralApiService
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 
 class AIFragment : Fragment() {
 
-    private lateinit var deepSeekApiService: DeepSeekApiService
+    private lateinit var mistralApiService: MistralApiService
     private lateinit var scrollView: ScrollView
     private lateinit var scrollView2: ScrollView
     private lateinit var linerAI: LinearLayout
@@ -51,9 +51,9 @@ class AIFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val apiKey = "sk-2d9c861e51ab41fba84f87ede0f157ff"
+        val apiKey = "yJ2EuRaojKn7nhRrSPmWPWR6YNQAINVY"
 
-         val client = OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val original = chain.request()
 
@@ -61,20 +61,20 @@ class AIFragment : Fragment() {
                     .header("Authorization", "Bearer $apiKey")
 
                 val request = requestBuilder.build()
+                Log.d("AIFragment", "Request: $request")
                 chain.proceed(request)
             }
-             .connectTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .build()
 
-
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.deepseek.com/")
+            .baseUrl("https://api.mistral.ai/")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        deepSeekApiService = retrofit.create(DeepSeekApiService::class.java)
+        mistralApiService = retrofit.create(MistralApiService::class.java)
     }
 
     @SuppressLint("MissingInflatedId")
@@ -122,12 +122,22 @@ class AIFragment : Fragment() {
                     "symptoms:" +
                     "description")
         )
-        val request = DiseaseRequest("deepseek-chat", messages, 1.0)
+
+        Log.d("AIFragment", "Message content: ${messages[0].content}")
+
+        val request = DiseaseRequest("mistral-large-latest", messages, 1.0)
         val json = gson.toJson(request)
         val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
 
+        Log.d("AIFragment", "Request body: $json")
+
         return try {
-            deepSeekApiService.predictDisease(requestBody)
+            val response = mistralApiService.completeChat(requestBody)
+            Log.d("AIFragment", "Response: ${gson.toJson(response)}")
+            response
+        } catch (e: HttpException) {
+            Log.e("AIFragment", "HTTP error: ${e.code()} ${e.message()}")
+            null
         } catch (e: Exception) {
             Log.e("AIFragment", "Ошибка извлечения данных.", e)
             null
@@ -137,26 +147,35 @@ class AIFragment : Fragment() {
     private suspend fun fetchSymptomsDiseasesInfo(symptoms: String): DiseaseResponse? {
         gson = Gson()
         val messages = listOf(
-            Message("user", "Дай ответ на русском языке и напиши 5 возможных болезней с их описанием по указанным симптомам $symptoms в формате json" +
+            Message("user", "Дай ответ на русском языке и напиши 5 возможных болезней с их описанием по указанным симптомам $symptoms.Не добавляй никаких дополнительных слов или объяснений, только JSON." +
                     "diseaseName: " +
                     "description: ")
         )
-        val request = DiseaseRequest("deepseek-chat", messages, 1.0)
+
+        Log.d("AIFragment", "Message content: ${messages[0].content}")
+
+        val request = DiseaseRequest("mistral-large-latest", messages, 1.0)
         val json = gson.toJson(request)
         val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
 
+        Log.d("AIFragment", "Request body: $json")
+
         return try {
-            deepSeekApiService.predictDisease(requestBody)
+            val response = mistralApiService.completeChat(requestBody)
+            Log.d("AIFragment", "Response: ${gson.toJson(response)}")
+            response
+        } catch (e: HttpException) {
+            Log.e("AIFragment", "HTTP error: ${e.code()} ${e.message()}")
+            null
         } catch (e: Exception) {
             Log.e("AIFragment", "Ошибка извлечения данных.", e)
             null
         }
     }
 
-    private fun displayDiseaseSymptomsInfo(diseaseResponse: DiseaseResponse?) {
-        val firstChoice = diseaseResponse?.choices?.get(0)
+    private fun displayDiseaseSymptomsInfo(chatResponse: DiseaseResponse?) {
+        val firstChoice = chatResponse?.choices?.get(0)
         val message = firstChoice?.message
-        //Log.d("DiseaseInfo", message?.content.toString())
         if (message?.content != null) {
             val diseaseInfoList = parseDiseaseSymptomsInfo(message.content)
             val formattedInfo = StringBuilder()
@@ -171,8 +190,8 @@ class AIFragment : Fragment() {
         }
     }
 
-    private fun displayDiseaseInfo(diseaseResponse: DiseaseResponse?) {
-        val firstChoice = diseaseResponse?.choices?.get(0)
+    private fun displayDiseaseInfo(chatResponse: DiseaseResponse?) {
+        val firstChoice = chatResponse?.choices?.get(0)
         val message = firstChoice?.message
         if (message?.content != null) {
             val diseaseInfo = parseDiseaseInfo(message.content)
@@ -201,20 +220,14 @@ class AIFragment : Fragment() {
         return diseaseInfo
     }
 
-
     private fun parseDiseaseSymptomsInfo(content: String): List<Map<String, String>> {
         val jsonContent = content.substringAfter("```json").substringBeforeLast("\n```")
 
         val type = object : TypeToken<List<Map<String, String>>>() {}.type
         val diseaseInfoList: List<Map<String, String>> = gson.fromJson(jsonContent, type)
 
-        //Log.d("Parsed JSON", diseaseInfoList.toString())
-
         return diseaseInfoList
     }
-
-
-
 
     @SuppressLint("SetTextI18n")
     private suspend fun fetchData(request: String, symptoms: Boolean) {
@@ -223,18 +236,16 @@ class AIFragment : Fragment() {
         scrollView2.isVisible = false
         lifecycleScope.launch {
             try {
-                val diseaseResponse = if (symptoms) {
+                val chatResponse = if (symptoms) {
                     fetchSymptomsDiseasesInfo(request)
                 } else {
                     fetchDiseaseInfo(request)
                 }
-                val jsonResponse = gson.toJson(diseaseResponse)
 
-                //Log.d("JSON Response", jsonResponse)
                 if (symptoms) {
-                    displayDiseaseSymptomsInfo(diseaseResponse)
+                    displayDiseaseSymptomsInfo(chatResponse)
                 } else {
-                    displayDiseaseInfo(diseaseResponse)
+                    displayDiseaseInfo(chatResponse)
                 }
 
                 constraintProgressBar.isVisible = false
@@ -249,6 +260,7 @@ class AIFragment : Fragment() {
             }
         }
     }
+
     fun onQueryTextSubmit(query: String) {
         if (!diseaseButton.isChecked && !symptomsButton.isChecked) {
             Toast.makeText(context, "Выберите фильтр поиска по заболеваниям!", Toast.LENGTH_SHORT).show()
