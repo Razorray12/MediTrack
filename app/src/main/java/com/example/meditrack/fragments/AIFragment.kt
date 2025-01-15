@@ -51,7 +51,7 @@ class AIFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val apiKey = "yJ2EuRaojKn7nhRrSPmWPWR6YNQAINVY"
+        val apiKey = ""
 
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
