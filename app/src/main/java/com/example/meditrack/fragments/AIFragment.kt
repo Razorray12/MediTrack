@@ -22,6 +22,9 @@ import com.example.meditrack.ai.Message
 import com.example.meditrack.ai.MistralApiService
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
@@ -51,7 +54,7 @@ class AIFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val apiKey = ""
+        val apiKey = "yJ2EuRaojKn7nhRrSPmWPWR6YNQAINVY"
 
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
@@ -116,7 +119,7 @@ class AIFragment : Fragment() {
     private suspend fun fetchDiseaseInfo(diseaseName: String): DiseaseResponse? {
         gson = Gson()
         val messages = listOf(
-            Message("user", "Дай ответ на русском языке в формате:" +
+            Message("user", "Не добавляй никаких дополнительных слов или объяснений, только JSON. Дай ответ на русском языке в формате:" +
                     "diseaseName:$diseaseName" +
                     "drugsName:" +
                     "symptoms:" +
@@ -195,11 +198,12 @@ class AIFragment : Fragment() {
         val message = firstChoice?.message
         if (message?.content != null) {
             val diseaseInfo = parseDiseaseInfo(message.content)
-            val drugName = diseaseInfo["drugsName"] ?: "Информация о лекарстве не найдена."
-            val symptoms = diseaseInfo["symptoms"] ?: "Симптомы не найдены."
-            val description = diseaseInfo["description"] ?: "Описание заболевания не найдено."
+            val drugName = (diseaseInfo["drugsName"] as? List<*>)?.takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "Информация о лекарстве не найдена."
+            val symptoms = (diseaseInfo["symptoms"] as? List<*>)?.takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "Симптомы не найдены."
+            val description = diseaseInfo["description"] as? String ?: "Описание заболевания не найдено."
+            val diseaseName = diseaseInfo["diseaseName"] as? String ?: "Название заболевания не найдено."
 
-            diseaseNameView.text = diseaseInfo["diseaseName"]
+            diseaseNameView.text = diseaseName
             symptopmsNameView.text = symptoms
             medicationsNameView.text = drugName
             descriptionNameView.text = description
@@ -208,26 +212,37 @@ class AIFragment : Fragment() {
         }
     }
 
-    private fun parseDiseaseInfo(content: String): Map<String, String> {
-        val diseaseInfo = mutableMapOf<String, String>()
-        val lines = content.split("\n")
-        for (line in lines) {
-            val parts = line.split(":", limit = 2)
-            if (parts.size == 2) {
-                diseaseInfo[parts[0].trim()] = parts[1].trim()
-            }
-        }
+    private fun parseDiseaseInfo(content: String): Map<String, Any> {
+        val jsonContent = content.substringAfter("```json").substringBeforeLast("```")
+
+        val type = object : TypeToken<Map<String, Any>>() {}.type
+        val diseaseInfo: Map<String, Any> = gson.fromJson(jsonContent, type)
+
         return diseaseInfo
     }
 
+
     private fun parseDiseaseSymptomsInfo(content: String): List<Map<String, String>> {
-        val jsonContent = content.substringAfter("```json").substringBeforeLast("\n```")
+        val jsonContent = content.substringAfter("```json").substringBeforeLast("```").trim()
 
-        val type = object : TypeToken<List<Map<String, String>>>() {}.type
-        val diseaseInfoList: List<Map<String, String>> = gson.fromJson(jsonContent, type)
+        return try {
+            val jsonElement = JsonParser.parseString(jsonContent)
 
-        return diseaseInfoList
+            if (jsonElement.isJsonObject) {
+                val diseaseMap: Map<String, List<Map<String, String>>> = Gson().fromJson(jsonElement, object : TypeToken<Map<String, List<Map<String, String>>>>() {}.type)
+                diseaseMap["diseases"] ?: diseaseMap["disease"] ?: emptyList()
+            } else if (jsonElement.isJsonArray) {
+                Gson().fromJson(jsonElement, object : TypeToken<List<Map<String, String>>>() {}.type)
+            } else {
+                emptyList()
+            }
+        } catch (e: JsonSyntaxException) {
+            emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
+
 
     @SuppressLint("SetTextI18n")
     private suspend fun fetchData(request: String, symptoms: Boolean) {
