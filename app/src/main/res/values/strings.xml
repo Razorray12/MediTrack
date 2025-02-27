@@ -70,5 +70,6 @@
     <string name="symptoms">Симптомы</string>
     <string name="namediagnos">Название</string>
     <string name="description">Описание</string>
+    <string name="refresh">Обновить</string>
 
 </resources>

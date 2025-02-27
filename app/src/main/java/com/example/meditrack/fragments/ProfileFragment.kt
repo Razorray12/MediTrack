@@ -6,43 +6,35 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.meditrack.R
 import com.example.meditrack.activities.LoginActivity
 import com.example.meditrack.activities.MainActivity
+import com.example.meditrack.viewmodels.ProfileLoadedViewModel
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import java.util.Objects
+import com.google.firebase.database.*
+import java.util.*
 
 class ProfileFragment : Fragment() {
+
     private var alreadyShownToast = false
     private var isDoctor = false
     private lateinit var profileLayout: LinearLayout
     private lateinit var scrollView: NestedScrollView
     private lateinit var rootView: View
+    private lateinit var viewModel: ProfileLoadedViewModel
 
     private var user: FirebaseUser? = null
     private var userRef: DatabaseReference? = null
     private var userId: String? = null
-
 
     private lateinit var emailTextView: TextView
     private lateinit var firstNameTextView: TextView
@@ -73,6 +65,7 @@ class ProfileFragment : Fragment() {
 
         scrollView = rootView.findViewById(R.id.scroll_profile)
         profileLayout = rootView.findViewById(R.id.linear_profile)
+        viewModel = ViewModelProvider(this)[ProfileLoadedViewModel::class.java]
 
         emailTextView = profileLayout.findViewById(R.id.text_email)
         firstNameTextView = profileLayout.findViewById(R.id.text_first_name)
@@ -80,8 +73,7 @@ class ProfileFragment : Fragment() {
         middleNameTextView = profileLayout.findViewById(R.id.text_middle_name)
         experienceTextView = profileLayout.findViewById(R.id.text_experience)
         specializationTextView = profileLayout.findViewById(R.id.text_specialization)
-        specializationInvisibleTextView =
-            profileLayout.findViewById(R.id.specialization_for_invisible)
+        specializationInvisibleTextView = profileLayout.findViewById(R.id.specialization_for_invisible)
 
         emailEditText = profileLayout.findViewById(R.id.edit_email)
         firstNameEditText = profileLayout.findViewById(R.id.edit_first_name)
@@ -92,15 +84,12 @@ class ProfileFragment : Fragment() {
 
         scrollView.setOnClickListener { view: View ->
             scrollView.clearFocus()
-            val imm =
-                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
-
         profileLayout.setOnClickListener { view: View ->
             profileLayout.clearFocus()
-            val imm =
-                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
 
@@ -113,37 +102,22 @@ class ProfileFragment : Fragment() {
                 if (snapshot.exists()) {
                     isDoctor = true
                 }
-
                 userRef = if (isDoctor) {
-                    FirebaseDatabase.getInstance().getReference("users/doctors").child(
-                        userId!!
-                    )
+                    FirebaseDatabase.getInstance().getReference("users/doctors").child(userId!!)
                 } else {
-                    FirebaseDatabase.getInstance().getReference("users/nurses").child(
-                        userId!!
-                    )
+                    FirebaseDatabase.getInstance().getReference("users/nurses").child(userId!!)
                 }
 
                 userRef!!.addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val email = user!!.email
-                        val firstName = snapshot.child("firstName").getValue(
-                            String::class.java
-                        )
-                        val lastName = snapshot.child("lastName").getValue(
-                            String::class.java
-                        )
-                        val middleName = snapshot.child("middleName").getValue(
-                            String::class.java
-                        )
-                        val experience = snapshot.child("experience").getValue(
-                            String::class.java
-                        )
+                        val firstName = snapshot.child("firstName").getValue(String::class.java)
+                        val lastName = snapshot.child("lastName").getValue(String::class.java)
+                        val middleName = snapshot.child("middleName").getValue(String::class.java)
+                        val experience = snapshot.child("experience").getValue(String::class.java)
 
                         if (isDoctor) {
-                            val specialization = snapshot.child("specialization").getValue(
-                                String::class.java
-                            )
+                            val specialization = snapshot.child("specialization").getValue(String::class.java)
                             specializationEditText.setText(specialization)
                             specializationTextView.text = specialization
                         } else {
@@ -165,103 +139,80 @@ class ProfileFragment : Fragment() {
                         experienceTextView.text = experience
                     }
 
-                    override fun onCancelled(error: DatabaseError) {
-                    }
+                    override fun onCancelled(error: DatabaseError) {}
                 })
-                Handler(Looper.getMainLooper()).postDelayed({
-                    val shimmerLinearLayout =
-                        rootView.findViewById<ShimmerFrameLayout>(R.id.goat_profile)
-                    shimmerLinearLayout.visibility = View.GONE
-                }, 1000)
-            }
 
-            override fun onCancelled(error: DatabaseError) {
+                val shimmerLayout = rootView.findViewById<ShimmerFrameLayout>(R.id.goat_profile)
+                if (viewModel.isDataLoaded.value == true) {
+                    shimmerLayout.stopShimmer()
+                    shimmerLayout.visibility = View.GONE
+                } else {
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        shimmerLayout.stopShimmer()
+                        shimmerLayout.visibility = View.GONE
+                        viewModel.isDataLoaded.value = true
+                    }, 1000)
+                }
             }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+
+        viewModel.isEditing.observe(viewLifecycleOwner, Observer { editing ->
+            updateUIForEditing(editing)
+            requireActivity().invalidateOptionsMenu()
         })
 
         val signOutButton = profileLayout.findViewById<Button>(R.id.sign_out)
         val deleteAccountView = profileLayout.findViewById<TextView>(R.id.delete_account)
 
         signOutButton.setOnClickListener {
-            val builder =
-                AlertDialog.Builder(context)
-            val dialogView: View = inflater.inflate(R.layout.custom_alert_dialog, null)
-
+            val builder = AlertDialog.Builder(context)
+            val dialogView = LayoutInflater.from(context).inflate(R.layout.custom_alert_dialog, null)
             builder.setView(dialogView)
-
             val alertDialog = builder.create()
-
-            val positiveButton =
-                dialogView.findViewById<TextView>(R.id.positiveButton)
-            val negativeButton =
-                dialogView.findViewById<TextView>(R.id.negativeButton)
-
+            val positiveButton = dialogView.findViewById<TextView>(R.id.positiveButton)
+            val negativeButton = dialogView.findViewById<TextView>(R.id.negativeButton)
             positiveButton.setOnClickListener {
-                val mAuth = FirebaseAuth.getInstance()
-                mAuth.signOut()
-
+                FirebaseAuth.getInstance().signOut()
                 alertDialog.dismiss()
-
-                val intent =
-                    Intent(context, LoginActivity::class.java)
+                val intent = Intent(context, LoginActivity::class.java)
                 startActivity(intent)
                 requireActivity().finish()
             }
-
             negativeButton.setOnClickListener { alertDialog.dismiss() }
-
             alertDialog.show()
-            Objects.requireNonNull<Window?>(alertDialog.window)
-                .setBackgroundDrawableResource(R.drawable.alertdialog_background)
+            alertDialog.window?.setBackgroundDrawableResource(R.drawable.alertdialog_background)
         }
 
         deleteAccountView.setOnClickListener {
-            val builder =
-                AlertDialog.Builder(context)
-            val dialogView: View =
-                inflater.inflate(R.layout.custom_alert_delete_dialog, null)
-
+            val builder = AlertDialog.Builder(context)
+            val dialogView = LayoutInflater.from(context).inflate(R.layout.custom_alert_delete_dialog, null)
             builder.setView(dialogView)
-
             val alertDialog = builder.create()
-
-            val positiveButton =
-                dialogView.findViewById<TextView>(R.id.positiveButtonDelete)
-            val negativeButton =
-                dialogView.findViewById<TextView>(R.id.negativeButtonDelete)
-
+            val positiveButton = dialogView.findViewById<TextView>(R.id.positiveButtonDelete)
+            val negativeButton = dialogView.findViewById<TextView>(R.id.negativeButtonDelete)
             positiveButton.setOnClickListener {
                 alertDialog.dismiss()
                 userRef!!.removeValue()
-                    .addOnSuccessListener { }
-                    .addOnFailureListener { }
-
-                val mAuth = FirebaseAuth.getInstance()
-                mAuth.signOut()
-
+                    .addOnSuccessListener {}
+                    .addOnFailureListener {}
+                FirebaseAuth.getInstance().signOut()
                 user!!.delete()
                 Toast.makeText(requireContext(), "Аккаунт удален!", Toast.LENGTH_SHORT).show()
-
-
-                val intent =
-                    Intent(context, LoginActivity::class.java)
+                val intent = Intent(context, LoginActivity::class.java)
                 startActivity(intent)
                 requireActivity().finish()
             }
-
             negativeButton.setOnClickListener { alertDialog.dismiss() }
-
             alertDialog.show()
-            Objects.requireNonNull<Window?>(alertDialog.window)
-                .setBackgroundDrawableResource(R.drawable.alertdialog_background)
+            alertDialog.window?.setBackgroundDrawableResource(R.drawable.alertdialog_background)
         }
 
         return rootView
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        if (id == R.id.action_edit) {
+    private fun updateUIForEditing(editing: Boolean) {
+        if (editing) {
             emailTextView.visibility = View.GONE
             emailEditText.visibility = View.VISIBLE
             firstNameTextView.visibility = View.GONE
@@ -270,21 +221,13 @@ class ProfileFragment : Fragment() {
             lastNameEditText.visibility = View.VISIBLE
             middleNameTextView.visibility = View.GONE
             middleNameEditText.visibility = View.VISIBLE
-            specializationTextView.visibility = View.GONE
-            if (isDoctor) {
-                specializationEditText.visibility = View.VISIBLE
-            }
             experienceTextView.visibility = View.GONE
             experienceEditText.visibility = View.VISIBLE
-
-            item.setVisible(false)
-
-            (requireActivity() as MainActivity).showSaveButton()
-            (requireActivity() as MainActivity).showCloseEditButton()
-            (requireActivity() as MainActivity).showCloseEditButton()
-
-            return true
-        } else if (id == R.id.action_close_edit) {
+            if (isDoctor) {
+                specializationTextView.visibility = View.GONE
+                specializationEditText.visibility = View.VISIBLE
+            }
+        } else {
             emailTextView.visibility = View.VISIBLE
             emailEditText.visibility = View.GONE
             firstNameTextView.visibility = View.VISIBLE
@@ -293,138 +236,110 @@ class ProfileFragment : Fragment() {
             lastNameEditText.visibility = View.GONE
             middleNameTextView.visibility = View.VISIBLE
             middleNameEditText.visibility = View.GONE
-            if (isDoctor) {
-                specializationTextView.visibility = View.VISIBLE
-            }
-            specializationEditText.visibility = View.GONE
             experienceTextView.visibility = View.VISIBLE
             experienceEditText.visibility = View.GONE
+            if (isDoctor) {
+                specializationTextView.visibility = View.VISIBLE
+                specializationEditText.visibility = View.GONE
+            }
+        }
+    }
 
-            item.setVisible(false)
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        val editItem = menu.findItem(R.id.action_edit)
+        val closeItem = menu.findItem(R.id.action_close_edit)
 
-            (requireActivity() as MainActivity).showEditButton()
+        if (viewModel.isEditing.value == true) {
+            editItem?.isVisible = false
+            closeItem?.isVisible = true
+
+            (requireActivity() as MainActivity).showSaveButton()
+        } else {
+            editItem?.isVisible = true
+            closeItem?.isVisible = false
+
             (requireActivity() as MainActivity).closeSaveButton()
+        }
+    }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.action_edit) {
+            viewModel.isEditing.value = true
+            return true
+        } else if (id == R.id.action_close_edit) {
+            viewModel.isEditing.value = false
             return true
         }
-
         return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {
         super.onResume()
+        (requireActivity() as MainActivity).setToolbarSaveButtonListener {
 
-        (requireActivity() as MainActivity).setToolbarSaveButtonListener { v ->
-            val email = emailEditText.text.toString()
-            if (!isValidEmail(email)) {
-                if (!alreadyShownToast) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Введите корректный email адрес!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        alreadyShownToast = false
-                    }, 3000)
-                }
-                return@setToolbarSaveButtonListener
-            }
-            val firstName = firstNameEditText.text.toString()
-            val lastName = lastNameEditText.text.toString()
-            val middleName = middleNameEditText.text.toString()
-            val experience = experienceEditText.text.toString()
-            val specialization = specializationEditText.text.toString()
+            saveProfileData()
 
-            val userUpdates: MutableMap<String, Any> =
-                HashMap()
-            userUpdates["email"] = email
-            userUpdates["firstName"] = firstName
-            userUpdates["lastName"] = lastName
-            userUpdates["middleName"] = middleName
-            userUpdates["experience"] = experience
-            if (isDoctor) {
-                userUpdates["specialization"] = specialization
-            }
-
-            userRef = if (isDoctor) {
-                FirebaseDatabase.getInstance().getReference("users/doctors").child(userId!!)
-            } else {
-                FirebaseDatabase.getInstance().getReference("users/nurses").child(userId!!)
-            }
-
-            userRef!!.updateChildren(userUpdates)
-
-            emailTextView.visibility = View.VISIBLE
-            emailEditText.visibility = View.GONE
-            firstNameTextView.visibility = View.VISIBLE
-            firstNameEditText.visibility = View.GONE
-            lastNameTextView.visibility = View.VISIBLE
-            lastNameEditText.visibility = View.GONE
-            middleNameTextView.visibility = View.VISIBLE
-            middleNameEditText.visibility = View.GONE
-            if (isDoctor) {
-                specializationTextView.visibility = View.VISIBLE
-            }
-            specializationEditText.visibility = View.GONE
-            experienceTextView.visibility = View.VISIBLE
-            experienceEditText.visibility = View.GONE
-
-
-            val imm =
-                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(rootView.windowToken, 0)
-
-            (requireActivity() as MainActivity).closeSaveButton()
-            (requireActivity() as MainActivity).closeCloseEditButton()
-            (requireActivity() as MainActivity).showEditButton()
+            viewModel.isEditing.value = false
         }
     }
 
-    private fun isValidEmail(email: String): Boolean {
-        val emailRegex =
-            "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
+    private fun saveProfileData() {
+        val email = emailEditText.text.toString()
+        if (!isValidEmail(email)) {
+            if (!alreadyShownToast) {
+                Toast.makeText(
+                    requireContext(),
+                    "Введите корректный email адрес!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    alreadyShownToast = false
+                }, 3000)
+                alreadyShownToast = true
+            }
+            return
+        }
+        val firstName = firstNameEditText.text.toString()
+        val lastName = lastNameEditText.text.toString()
+        val middleName = middleNameEditText.text.toString()
+        val experience = experienceEditText.text.toString()
 
+        val userUpdates: MutableMap<String, Any> = HashMap()
+        userUpdates["email"] = email
+        userUpdates["firstName"] = firstName
+        userUpdates["lastName"] = lastName
+        userUpdates["middleName"] = middleName
+        userUpdates["experience"] = experience
+
+        if (isDoctor) {
+            userUpdates["specialization"] = specializationEditText.text.toString()
+        }
+
+        userRef?.updateChildren(userUpdates)
+
+        val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(rootView.windowToken, 0)
+
+        Toast.makeText(requireContext(), "Изменения сохранены!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$"
         return email.matches(emailRegex.toRegex())
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (hidden) {
-            emailTextView.visibility = View.VISIBLE
-            emailEditText.visibility = View.GONE
-            firstNameTextView.visibility = View.VISIBLE
-            firstNameEditText.visibility = View.GONE
-            lastNameTextView.visibility = View.VISIBLE
-            lastNameEditText.visibility = View.GONE
-            middleNameTextView.visibility = View.VISIBLE
-            middleNameEditText.visibility = View.GONE
-            if (isDoctor) {
-                specializationTextView.visibility = View.VISIBLE
-            }
-            specializationEditText.visibility = View.GONE
-            experienceTextView.visibility = View.VISIBLE
-            experienceEditText.visibility = View.GONE
-
-            val imm =
-                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            viewModel.isEditing.value = false
+            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(requireView().windowToken, 0)
         }
     }
 
     fun onHideEditText() {
-        emailTextView.visibility = View.VISIBLE
-        emailEditText.visibility = View.GONE
-        firstNameTextView.visibility = View.VISIBLE
-        firstNameEditText.visibility = View.GONE
-        lastNameTextView.visibility = View.VISIBLE
-        lastNameEditText.visibility = View.GONE
-        middleNameTextView.visibility = View.VISIBLE
-        middleNameEditText.visibility = View.GONE
-        if (isDoctor) {
-            specializationTextView.visibility = View.VISIBLE
-        }
-        specializationEditText.visibility = View.GONE
-        experienceTextView.visibility = View.VISIBLE
-        experienceEditText.visibility = View.GONE
+        viewModel.isEditing.value = false
     }
 }

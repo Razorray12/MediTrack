@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.meditrack.R
 import com.example.meditrack.adapters.PatientAdapter
 import com.example.meditrack.entities.Patient
+import com.example.meditrack.viewmodels.DataLoadedViewModel
 import com.example.meditrack.viewmodels.PatientViewModel
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.firebase.database.DataSnapshot
@@ -28,6 +29,7 @@ class SearchFragment : Fragment() {
     private var fragmentSwitchListener: OnFragmentSwitchListener? = null
     private lateinit var recyclerView: RecyclerView
     private var database: DatabaseReference? = null
+    private lateinit var viewModel: DataLoadedViewModel
     var patientAdapter: PatientAdapter? = null
     var patients: ArrayList<Patient> = ArrayList()
     private var shimmerView1: ShimmerFrameLayout? = null
@@ -45,6 +47,7 @@ class SearchFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
         database = FirebaseDatabase.getInstance().getReference("users/patients")
         recyclerView = view.findViewById(R.id.recyclerview_patient)
+        viewModel = ViewModelProvider(this)[DataLoadedViewModel::class.java]
 
         val layoutManager = LinearLayoutManager(context)
         recyclerView.layoutManager = layoutManager
@@ -63,7 +66,6 @@ class SearchFragment : Fragment() {
             }
         })
 
-
         recyclerView.adapter = patientAdapter
 
         database?.addValueEventListener(object : ValueEventListener {
@@ -77,15 +79,13 @@ class SearchFragment : Fragment() {
                 patientAdapter?.setRecyclerPatients(newPatients)
                 patientAdapter?.notifyDataSetChanged()
 
-                Handler(Looper.getMainLooper()).postDelayed({
-                    val shimmerLinearLayout =
-                        view.findViewById<LinearLayout>(R.id.shimmer_view_container)
+                if (viewModel.isDataLoaded.value == true) {
+                    val shimmerLinearLayout = view.findViewById<LinearLayout>(R.id.shimmer_view_container)
                     shimmerView1 = view.findViewById(R.id.shimmer_view_1)
                     shimmerView2 = view.findViewById(R.id.shimmer_view_2)
                     shimmerView3 = view.findViewById(R.id.shimmer_view_3)
                     shimmerView4 = view.findViewById(R.id.shimmer_view_4)
                     shimmerView5 = view.findViewById(R.id.shimmer_view_5)
-
 
                     shimmerView1?.stopShimmer()
                     shimmerView2?.stopShimmer()
@@ -93,7 +93,25 @@ class SearchFragment : Fragment() {
                     shimmerView4?.stopShimmer()
                     shimmerView5?.stopShimmer()
                     shimmerLinearLayout.visibility = View.GONE
-                }, 2000)
+                } else {
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        val shimmerLinearLayout = view.findViewById<LinearLayout>(R.id.shimmer_view_container)
+                        shimmerView1 = view.findViewById(R.id.shimmer_view_1)
+                        shimmerView2 = view.findViewById(R.id.shimmer_view_2)
+                        shimmerView3 = view.findViewById(R.id.shimmer_view_3)
+                        shimmerView4 = view.findViewById(R.id.shimmer_view_4)
+                        shimmerView5 = view.findViewById(R.id.shimmer_view_5)
+
+                        shimmerView1?.stopShimmer()
+                        shimmerView2?.stopShimmer()
+                        shimmerView3?.stopShimmer()
+                        shimmerView4?.stopShimmer()
+                        shimmerView5?.stopShimmer()
+                        shimmerLinearLayout.visibility = View.GONE
+
+                        viewModel.isDataLoaded.value = true
+                    }, 2000)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -141,4 +159,5 @@ class SearchFragment : Fragment() {
     fun setOnFragmentSwitchListener(listener: OnFragmentSwitchListener?) {
         this.fragmentSwitchListener = listener
     }
+
 }

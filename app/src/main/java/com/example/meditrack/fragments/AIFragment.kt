@@ -2,15 +2,13 @@ package com.example.meditrack.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.RadioButton
-import android.widget.ScrollView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -20,9 +18,7 @@ import com.example.meditrack.ai.DiseaseRequest
 import com.example.meditrack.ai.DiseaseResponse
 import com.example.meditrack.ai.Message
 import com.example.meditrack.ai.MistralApiService
-import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
@@ -51,18 +47,18 @@ class AIFragment : Fragment() {
     private lateinit var diseaseButton: RadioButton
     private lateinit var gson: Gson
 
+    private lateinit var refreshButton: Button
+    private var lastQuery: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val apiKey = "yJ2EuRaojKn7nhRrSPmWPWR6YNQAINVY"
+        val apiKey = "key"
 
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val original = chain.request()
-
                 val requestBuilder = original.newBuilder()
                     .header("Authorization", "Bearer $apiKey")
-
                 val request = requestBuilder.build()
                 Log.d("AIFragment", "Request: $request")
                 chain.proceed(request)
@@ -90,7 +86,6 @@ class AIFragment : Fragment() {
         scrollView = view.findViewById(R.id.scroll_ai)
         scrollView2 = view.findViewById(R.id.scroll_ai_symptoms)
         linerAI = view.findViewById(R.id.linear_ai)
-
         diseaseNameView = scrollView.findViewById(R.id.diagnos_name_text)
         symptopmsNameView = scrollView.findViewById(R.id.symptopms_name_text)
         medicationsNameView = scrollView.findViewById(R.id.medications_name_text)
@@ -99,13 +94,13 @@ class AIFragment : Fragment() {
         diseaseButton = linerAI.findViewById(R.id.button_diagnosis)
         symptomsButton = linerAI.findViewById(R.id.button_symptoms)
         constraintProgressBar = linerAI.findViewById(R.id.constraint_progress)
+
         diseaseButton.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 symptomsButton.isChecked = false
                 isSymptom = false
             }
         }
-
         symptomsButton.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 diseaseButton.isChecked = false
@@ -113,7 +108,73 @@ class AIFragment : Fragment() {
             }
         }
 
+        refreshButton = view.findViewById(R.id.buttonRefresh)
+        refreshButton.setOnClickListener {
+            if (lastQuery.isNotEmpty()) {
+                onQueryTextSubmit(lastQuery)
+            }
+        }
+
         return view
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun fetchData(request: String, symptoms: Boolean) {
+        lastQuery = request
+        constraintProgressBar.isVisible = true
+        scrollView.isVisible = false
+        scrollView2.isVisible = false
+        refreshButton.visibility = View.GONE
+
+        lifecycleScope.launch {
+            try {
+                val chatResponse = if (symptoms) {
+                    fetchSymptomsDiseasesInfo(request)
+                } else {
+                    fetchDiseaseInfo(request)
+                }
+
+                if (chatResponse == null ||
+                    chatResponse.choices.isEmpty() ||
+                    chatResponse.choices[0].message.content.isNullOrEmpty()
+                ) {
+                    diseaseNameView.text = "Информация не найдена."
+                    diseasesSymptomsView.text = "Информация не найдена."
+                    refreshButton.visibility = View.VISIBLE
+                } else {
+                    if (symptoms) {
+                        val diseaseInfoList = parseDiseaseSymptomsInfo(chatResponse.choices[0].message.content.toString())
+                        if (diseaseInfoList.isEmpty()) {
+                            diseasesSymptomsView.text = "Информация не найдена."
+                            refreshButton.visibility = View.VISIBLE
+                        } else {
+                            refreshButton.visibility = View.GONE
+                            displayDiseaseSymptomsInfo(chatResponse)
+                        }
+                    } else {
+                        val diseaseInfo = parseDiseaseInfo(chatResponse.choices[0].message.content.toString())
+                        if (diseaseInfo["diseaseName"]?.toString()?.isEmpty() != false) {
+                            diseaseNameView.text = "Информация не найдена."
+                            refreshButton.visibility = View.VISIBLE
+                        } else {
+                            refreshButton.visibility = View.GONE
+                            displayDiseaseInfo(chatResponse)
+                        }
+                    }
+                }
+                constraintProgressBar.isVisible = false
+                if (isSymptom) {
+                    scrollView2.isVisible = true
+                } else {
+                    scrollView.isVisible = true
+                }
+            } catch (e: Exception) {
+                Log.e("AIFragment", "Ошибка извлечения данных", e)
+                diseaseNameView.text = "Информация не найдена."
+                constraintProgressBar.isVisible = false
+                refreshButton.visibility = View.VISIBLE
+            }
+        }
     }
 
     private suspend fun fetchDiseaseInfo(diseaseName: String): DiseaseResponse? {
@@ -127,13 +188,11 @@ class AIFragment : Fragment() {
         )
 
         Log.d("AIFragment", "Message content: ${messages[0].content}")
-
         val request = DiseaseRequest("mistral-large-latest", messages, 1.0)
         val json = gson.toJson(request)
         val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
 
         Log.d("AIFragment", "Request body: $json")
-
         return try {
             val response = mistralApiService.completeChat(requestBody)
             Log.d("AIFragment", "Response: ${gson.toJson(response)}")
@@ -156,13 +215,11 @@ class AIFragment : Fragment() {
         )
 
         Log.d("AIFragment", "Message content: ${messages[0].content}")
-
         val request = DiseaseRequest("mistral-large-latest", messages, 1.0)
         val json = gson.toJson(request)
         val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
 
         Log.d("AIFragment", "Request body: $json")
-
         return try {
             val response = mistralApiService.completeChat(requestBody)
             Log.d("AIFragment", "Response: ${gson.toJson(response)}")
@@ -214,25 +271,20 @@ class AIFragment : Fragment() {
 
     private fun parseDiseaseInfo(content: String): Map<String, Any> {
         val jsonContent = content.substringAfter("```json").substringBeforeLast("```")
-
-        val type = object : TypeToken<Map<String, Any>>() {}.type
-        val diseaseInfo: Map<String, Any> = gson.fromJson(jsonContent, type)
-
-        return diseaseInfo
+        val type = object : com.google.gson.reflect.TypeToken<Map<String, Any>>() {}.type
+        return gson.fromJson(jsonContent, type)
     }
-
 
     private fun parseDiseaseSymptomsInfo(content: String): List<Map<String, String>> {
         val jsonContent = content.substringAfter("```json").substringBeforeLast("```").trim()
-
         return try {
             val jsonElement = JsonParser.parseString(jsonContent)
-
             if (jsonElement.isJsonObject) {
-                val diseaseMap: Map<String, List<Map<String, String>>> = Gson().fromJson(jsonElement, object : TypeToken<Map<String, List<Map<String, String>>>>() {}.type)
+                val diseaseMap: Map<String, List<Map<String, String>>> =
+                    Gson().fromJson(jsonElement, object : com.google.gson.reflect.TypeToken<Map<String, List<Map<String, String>>>>() {}.type)
                 diseaseMap["diseases"] ?: diseaseMap["disease"] ?: emptyList()
             } else if (jsonElement.isJsonArray) {
-                Gson().fromJson(jsonElement, object : TypeToken<List<Map<String, String>>>() {}.type)
+                Gson().fromJson(jsonElement, object : com.google.gson.reflect.TypeToken<List<Map<String, String>>>() {}.type)
             } else {
                 emptyList()
             }
@@ -240,39 +292,6 @@ class AIFragment : Fragment() {
             emptyList()
         } catch (e: Exception) {
             emptyList()
-        }
-    }
-
-
-    @SuppressLint("SetTextI18n")
-    private suspend fun fetchData(request: String, symptoms: Boolean) {
-        constraintProgressBar.isVisible = true
-        scrollView.isVisible = false
-        scrollView2.isVisible = false
-        lifecycleScope.launch {
-            try {
-                val chatResponse = if (symptoms) {
-                    fetchSymptomsDiseasesInfo(request)
-                } else {
-                    fetchDiseaseInfo(request)
-                }
-
-                if (symptoms) {
-                    displayDiseaseSymptomsInfo(chatResponse)
-                } else {
-                    displayDiseaseInfo(chatResponse)
-                }
-
-                constraintProgressBar.isVisible = false
-                if (isSymptom) {
-                    scrollView2.isVisible = true
-                } else {
-                    scrollView.isVisible = true
-                }
-            } catch (e: Exception) {
-                diseaseNameView.text = "Ошибка: ${e.message}"
-                constraintProgressBar.isVisible = false
-            }
         }
     }
 
