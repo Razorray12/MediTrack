@@ -71,5 +71,6 @@
     <string name="namediagnos">Название</string>
     <string name="description">Описание</string>
     <string name="refresh">Обновить</string>
+    <string name="entermsg">Введите сообщение...</string>
 
 </resources>

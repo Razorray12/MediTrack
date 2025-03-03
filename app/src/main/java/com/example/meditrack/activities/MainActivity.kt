@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment
 import com.example.meditrack.R
 import com.example.meditrack.fragments.AIFragment
 import com.example.meditrack.fragments.AddPatientsFragment
+import com.example.meditrack.fragments.ChatFragment
 import com.example.meditrack.fragments.InformationFragment
 import com.example.meditrack.fragments.ProfileFragment
 import com.example.meditrack.fragments.SearchFragment
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var addPatientFragment: AddPatientsFragment
     private lateinit var aiFragment: AIFragment
     private lateinit var selectedPatientsFragment: SelectedPatientsFragment
+    private lateinit var chatFragment: ChatFragment
 
     private var menu: Menu? = null
     private lateinit var saveButton: AppCompatImageButton
@@ -127,11 +129,12 @@ class MainActivity : AppCompatActivity() {
             profileFragment = ProfileFragment()
             selectedPatientsFragment = SelectedPatientsFragment()
             addPatientFragment = AddPatientsFragment()
+            chatFragment = ChatFragment()
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, searchFragment!!, "search_fragment")
+                .add(R.id.fragment_container, chatFragment!!, "chat_fragment")
                 .commit()
-            currentFragment = searchFragment
+            currentFragment = chatFragment
 
         } else {
             searchFragment = supportFragmentManager.findFragmentByTag("search_fragment") as? SearchFragment
