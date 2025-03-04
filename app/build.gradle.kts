@@ -42,6 +42,7 @@ android {
 dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation ("com.facebook.shimmer:shimmer:0.5.0")

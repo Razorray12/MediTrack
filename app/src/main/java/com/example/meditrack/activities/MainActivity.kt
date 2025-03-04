@@ -2,9 +2,7 @@ package com.example.meditrack.activities
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.Editable
 import android.text.Html
-import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -27,11 +25,6 @@ import com.example.meditrack.fragments.InformationFragment
 import com.example.meditrack.fragments.ProfileFragment
 import com.example.meditrack.fragments.SearchFragment
 import com.example.meditrack.fragments.SelectedPatientsFragment
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import java.util.Objects
 
 class MainActivity : AppCompatActivity() {
@@ -73,22 +66,6 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        val user = FirebaseAuth.getInstance().currentUser
-        val userId = Objects.requireNonNull(user)!!.uid
-        val doctorsRef = FirebaseDatabase.getInstance().getReference("users/doctors")
-        doctorsRef.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    isDoctor = true
-                }
-                if (!isDoctor) {
-                    addedPatientsImageButton.visibility = View.GONE
-                }
-                invalidateOptionsMenu()
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -132,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             chatFragment = ChatFragment()
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, chatFragment!!, "chat_fragment")
+                .add(R.id.fragment_container, chatFragment, "chat_fragment")
                 .commit()
             currentFragment = chatFragment
 
@@ -177,7 +154,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        selectedPatientsFragment?.setOnFragmentSwitchListener(object : SelectedPatientsFragment.OnFragmentSwitchListener {
+        selectedPatientsFragment.setOnFragmentSwitchListener(object : SelectedPatientsFragment.OnFragmentSwitchListener {
             override fun onSwitchToInformationFragment() {
                 val menuItem = menu?.findItem(R.id.action_add)
                 menuItem?.isVisible = false

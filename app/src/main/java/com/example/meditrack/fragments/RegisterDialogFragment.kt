@@ -6,27 +6,19 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.DialogFragment
 import com.example.meditrack.R
 import com.example.meditrack.activities.LoginActivity
-import com.example.meditrack.entities.Doctor
-import com.example.meditrack.entities.Nurse
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 
 class RegisterDialogFragment : DialogFragment() {
 
@@ -34,6 +26,8 @@ class RegisterDialogFragment : DialogFragment() {
     private var emailEditText: EditText? = null
     private var passwordEditText: EditText? = null
     private var alreadyShownToast = false
+
+    private val client = OkHttpClient()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireActivity(), R.style.RoundedCornersDialog)
@@ -89,105 +83,109 @@ class RegisterDialogFragment : DialogFragment() {
         val password = passwordEditText?.text.toString().trim()
 
         if (email.isEmpty() || password.isEmpty()) {
-            if (!alreadyShownToast) {
-                Toast.makeText(requireContext(), "Заполните все поля!", Toast.LENGTH_SHORT).show()
-                alreadyShownToast = true
-                Handler(Looper.getMainLooper()).postDelayed({
-                    alreadyShownToast = false
-                }, 3000)
-            }
+            showToastOnce("Заполните все поля!")
             return
         }
 
         if (password.length < 6) {
-            if (!alreadyShownToast) {
-                Toast.makeText(requireContext(), "Пароль должен быть не менее 6 символов!", Toast.LENGTH_SHORT).show()
-                alreadyShownToast = true
-                Handler(Looper.getMainLooper()).postDelayed({
-                    alreadyShownToast = false
-                }, 3000)
-            }
+            showToastOnce("Пароль должен быть не менее 6 символов!")
             return
         }
 
         if (!isValidEmail(email)) {
-            if (!alreadyShownToast) {
-                Toast.makeText(requireContext(), "Введите корректный email адрес!", Toast.LENGTH_SHORT).show()
-                alreadyShownToast = true
-                Handler(Looper.getMainLooper()).postDelayed({
-                    alreadyShownToast = false
-                }, 3000)
-            }
+            showToastOnce("Введите корректный email адрес!")
             return
         }
 
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task: Task<AuthResult?> ->
-                if (task.isSuccessful) {
-                    val firebaseUser = FirebaseAuth.getInstance().currentUser
-                    if (firebaseUser != null) {
-                        val progressBarReg = requireActivity().findViewById<ProgressBar>(R.id.progressBarRegist)
-                        val viewFocusReg = requireActivity().findViewById<View>(R.id.viewFocusRegistr)
+        val args = arguments
+        if (args == null) {
+            showToastOnce("Ошибка передачи данных!")
+            return
+        }
 
-                        progressBarReg.visibility = View.VISIBLE
-                        viewFocusReg.visibility = View.VISIBLE
-                        registrationDialogFocusLayout?.visibility = View.INVISIBLE
+        val firstName = args.getString("firstName") ?: ""
+        val lastName = args.getString("lastName") ?: ""
+        val middleName = args.getString("middleName") ?: ""
+        val experience = args.getString("experience") ?: ""
+        val specialization = args.getString("specialization") ?: ""
+        val userType = args.getString("userType") ?: ""
 
-                        val userId = firebaseUser.uid
-                        val args = arguments
+        val baseUrl = "http://192.168.0.1:8080"
+        val endpoint = if (userType == "Доктор") "/doctors" else "/nurses"
+        val registrationUrl = "$baseUrl$endpoint"
 
-                        saveUserToDataBase(
-                            userId,
-                            args?.getString("firstName"),
-                            args?.getString("lastName"),
-                            args?.getString("middleName"),
-                            args?.getString("experience"),
-                            args?.getString("specialization")
-                        )
+        val jsonBody = JSONObject().apply {
+            put("firstName", firstName)
+            put("lastName", lastName)
+            put("middleName", middleName)
+            put("experience", experience)
+            if (userType == "Доктор") {
+                put("specialization", specialization)
+            }
+            put("email", email)
+            put("password", password)
+        }
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val requestBody = jsonBody.toString().toRequestBody(mediaType)
 
-                        val intent = Intent(requireContext(), LoginActivity::class.java)
-                        FirebaseAuth.getInstance().signOut()
-                        startActivity(intent)
-                        requireActivity().finish()
+        val request = Request.Builder()
+            .url(registrationUrl)
+            .post(requestBody)
+            .build()
+
+        val progressBarReg = activity?.findViewById<ProgressBar>(R.id.progressBarRegist)
+        val viewFocusReg = activity?.findViewById<View>(R.id.viewFocusRegistr)
+
+        progressBarReg?.visibility = View.VISIBLE
+        viewFocusReg?.visibility = View.VISIBLE
+        registrationDialogFocusLayout?.visibility = View.INVISIBLE
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                activity?.runOnUiThread {
+                    progressBarReg?.visibility = View.GONE
+                    viewFocusReg?.visibility = View.GONE
+                    showToastOnce("Ошибка сети: ${e.message}")
+                    registrationDialogFocusLayout?.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    activity?.runOnUiThread {
+                        progressBarReg?.visibility = View.GONE
+                        viewFocusReg?.visibility = View.GONE
+                        registrationDialogFocusLayout?.visibility = View.VISIBLE
                     }
-                } else {
-                    if (!alreadyShownToast) {
-                        Toast.makeText(requireContext(), "Пользователь уже зарегистрирован!", Toast.LENGTH_SHORT).show()
-                        alreadyShownToast = true
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            alreadyShownToast = false
-                        }, 3000)
+
+                    if (!response.isSuccessful) {
+                        activity?.runOnUiThread {
+                            if(response.code == 500) {
+                                showToastOnce("Пользователь уже зарегистрирован")
+                            }
+                            else showToastOnce("Ошибка сервера (${response.code})")
+                        }
+                    } else {
+
+                        activity?.runOnUiThread {
+                            showToastOnce("Регистрация прошла успешно!")
+                            val intent = Intent(requireContext(), LoginActivity::class.java)
+                            startActivity(intent)
+                            activity?.finish()
+                        }
                     }
                 }
             }
+        })
     }
 
-    private fun saveUserToDataBase(
-        userId: String,
-        firstName: String?,
-        lastName: String?,
-        middleName: String?,
-        experience: String?,
-        specialization: String?
-    ) {
-        val database = FirebaseDatabase.getInstance()
-        val usersRef = database.getReference("users")
-        val args = arguments
-
-        if (args != null) {
-            val userType = args.getString("userType")
-            when (userType) {
-                "Доктор" -> {
-                    val doctor = Doctor(userId, firstName, lastName, middleName, experience, specialization)
-                    usersRef.child("doctors").child(userId).setValue(doctor)
-                }
-                "Медсестра" -> {
-                    val nurse = Nurse(userId, firstName.toString(),
-                        lastName.toString(), middleName.toString(), experience.toString()
-                    )
-                    usersRef.child("nurses").child(userId).setValue(nurse)
-                }
-            }
+    private fun showToastOnce(message: String) {
+        if (!alreadyShownToast) {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            alreadyShownToast = true
+            Handler(Looper.getMainLooper()).postDelayed({
+                alreadyShownToast = false
+            }, 3000)
         }
     }
 }

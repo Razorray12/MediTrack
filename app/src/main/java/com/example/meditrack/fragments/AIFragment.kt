@@ -2,13 +2,16 @@ package com.example.meditrack.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.ScrollView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -23,8 +26,9 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -190,7 +194,7 @@ class AIFragment : Fragment() {
         Log.d("AIFragment", "Message content: ${messages[0].content}")
         val request = DiseaseRequest("mistral-large-latest", messages, 1.0)
         val json = gson.toJson(request)
-        val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
 
         Log.d("AIFragment", "Request body: $json")
         return try {
@@ -217,7 +221,7 @@ class AIFragment : Fragment() {
         Log.d("AIFragment", "Message content: ${messages[0].content}")
         val request = DiseaseRequest("mistral-large-latest", messages, 1.0)
         val json = gson.toJson(request)
-        val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
 
         Log.d("AIFragment", "Request body: $json")
         return try {

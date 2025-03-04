@@ -52,6 +52,23 @@ class RegistrationActivity : AppCompatActivity() {
         checkBoxNurse = findViewById(R.id.checkBoxNurse)
         checkBoxDoctor = findViewById(R.id.checkBoxDoctor)
 
+        checkBoxNurse.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                checkBoxDoctor.isChecked = false
+                editTextSpecialization.isEnabled = false
+                editTextSpecialization.setText("")
+            }
+        }
+        checkBoxDoctor.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                checkBoxNurse.isChecked = false
+                editTextSpecialization.isEnabled = true
+            } else {
+                editTextSpecialization.isEnabled = false
+                editTextSpecialization.setText("")
+            }
+        }
+
         val buttonOnRegisterDialogFragment: Button = findViewById(R.id.buttonOnRegisterDialogFragment)
         buttonOnRegisterDialogFragment.setOnClickListener {
             val firstName = editTextFirstName.text.toString().trim()
@@ -60,14 +77,8 @@ class RegistrationActivity : AppCompatActivity() {
             val experience = editTextExperience.text.toString().trim()
             val specialization = editTextSpecialization.text.toString().trim()
 
-            if (firstName.isEmpty() || lastName.isEmpty() || experience.isEmpty() || middleName.isEmpty()) {
-                if (!alreadyShownToast) {
-                    Toast.makeText(this, "Заполните все поля!", Toast.LENGTH_SHORT).show()
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        alreadyShownToast = false
-                    }, 3000)
-                    alreadyShownToast = true
-                }
+            if (firstName.isEmpty() || lastName.isEmpty() || middleName.isEmpty() || experience.isEmpty()) {
+                showToastOnce("Заполните все поля!")
                 return@setOnClickListener
             }
 
@@ -77,25 +88,13 @@ class RegistrationActivity : AppCompatActivity() {
                 }
                 checkBoxDoctor.isChecked -> {
                     if (specialization.isEmpty()) {
-                        if (!alreadyShownToast) {
-                            Toast.makeText(this, "Укажите специализацию!", Toast.LENGTH_SHORT).show()
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                alreadyShownToast = false
-                            }, 3000)
-                            alreadyShownToast = true
-                        }
+                        showToastOnce("Укажите специализацию!")
                         return@setOnClickListener
                     }
                     "Доктор"
                 }
                 else -> {
-                    if (!alreadyShownToast) {
-                        Toast.makeText(this, "Укажите должность!", Toast.LENGTH_SHORT).show()
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            alreadyShownToast = false
-                        }, 3000)
-                        alreadyShownToast = true
-                    }
+                    showToastOnce("Укажите должность!")
                     return@setOnClickListener
                 }
             }
@@ -112,23 +111,15 @@ class RegistrationActivity : AppCompatActivity() {
             }
             registerDialog.show(supportFragmentManager, "registerDialog")
         }
+    }
 
-        checkBoxNurse.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                checkBoxDoctor.isChecked = false
-                editTextSpecialization.isEnabled = false
-                editTextSpecialization.setText("")
-            }
-        }
-
-        checkBoxDoctor.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                checkBoxNurse.isChecked = false
-                editTextSpecialization.isEnabled = true
-            } else {
-                editTextSpecialization.isEnabled = false
-                editTextSpecialization.setText("")
-            }
+    private fun showToastOnce(message: String) {
+        if (!alreadyShownToast) {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            alreadyShownToast = true
+            Handler(Looper.getMainLooper()).postDelayed({
+                alreadyShownToast = false
+            }, 3000)
         }
     }
 }

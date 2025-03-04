@@ -6,26 +6,24 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.meditrack.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 
 class LoginActivity : AppCompatActivity() {
     private var alreadyShownToast = false
-    private lateinit var mAuth: FirebaseAuth
-    private var currentUser: FirebaseUser? = null
     private lateinit var editTextEmail: EditText
     private lateinit var editTextPassword: EditText
+    private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,13 +34,6 @@ class LoginActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
-        }
-
-        mAuth = FirebaseAuth.getInstance()
-        currentUser = mAuth.currentUser
-        if (currentUser != null) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
         }
 
         editTextEmail = findViewById(R.id.editTextTextEmailAddress)
@@ -69,51 +60,126 @@ class LoginActivity : AppCompatActivity() {
         val password = editTextPassword.text.toString().trim()
 
         if (email.isEmpty() || password.isEmpty()) {
-            if (!alreadyShownToast) {
-                Toast.makeText(this, "Заполните все поля!", Toast.LENGTH_SHORT).show()
-                Handler(Looper.getMainLooper()).postDelayed({
-                    alreadyShownToast = false
-                }, 3000)
-                alreadyShownToast = true
-            }
+            showToastOnce("Заполните все поля!")
             return
         }
 
         val progressBar = findViewById<ProgressBar>(R.id.progressBarLogin)
         val viewFocus = findViewById<View>(R.id.viewFocus)
-
         viewFocus.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
 
-        mAuth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                viewFocus.visibility = View.GONE
-                progressBar.visibility = View.GONE
+        val baseUrl = "http://192.168.0.1:8080"
+        val doctorUrl = "$baseUrl/login/doctor"
+        val nurseUrl = "$baseUrl/login/nurse"
 
-                if (task.isSuccessful) {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
+        val jsonBody = JSONObject().apply {
+            put("email", email)
+            put("password", password)
+        }
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val requestBody = jsonBody.toString().toRequestBody(mediaType)
+
+        fun handleSuccess(responseBody: String) {
+            try {
+                val json = JSONObject(responseBody)
+                val token = json.optString("token", "")
+                if (token.isNotEmpty()) {
+                    saveToken(token)
+                    val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                    prefs.edit().putString("user_email", email).apply()
+
+                    runOnUiThread {
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                        finish()
+                    }
                 } else {
-                    val errorMessage = task.exception?.message ?: "Неизвестная ошибка"
-                    if (errorMessage.contains("incorrect") || errorMessage.contains("6") || errorMessage.contains("format")) {
-                        if (!alreadyShownToast) {
-                            Toast.makeText(this, "Неверный логин или пароль!", Toast.LENGTH_SHORT).show()
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                alreadyShownToast = false
-                            }, 3000)
-                            alreadyShownToast = true
+                    runOnUiThread {
+                        showToastOnce("Токен не найден в ответе сервера")
+                    }
+                }
+            } catch (ex: Exception) {
+                runOnUiThread {
+                    showToastOnce("Ошибка парсинга ответа: ${ex.message}")
+                }
+            }
+        }
+
+        val requestDoctor = Request.Builder()
+            .url(doctorUrl)
+            .post(requestBody)
+            .build()
+
+        client.newCall(requestDoctor).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    viewFocus.visibility = View.GONE
+                    progressBar.visibility = View.GONE
+                    showToastOnce("Ошибка сети: ${e.message}")
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    runOnUiThread {
+                        viewFocus.visibility = View.GONE
+                        progressBar.visibility = View.GONE
+                    }
+                    if (response.isSuccessful) {
+                        val bodyStr = response.body?.string()
+                        if (!bodyStr.isNullOrEmpty()) {
+                            handleSuccess(bodyStr)
+                        } else {
+                            runOnUiThread { showToastOnce("Пустой ответ от сервера") }
                         }
                     } else {
-                        if (!alreadyShownToast) {
-                            Toast.makeText(this, "Ошибка входа: $errorMessage", Toast.LENGTH_SHORT).show()
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                alreadyShownToast = false
-                            }, 3000)
-                            alreadyShownToast = true
-                        }
+                        val requestNurse = Request.Builder()
+                            .url(nurseUrl)
+                            .post(requestBody)
+                            .build()
+
+                        client.newCall(requestNurse).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                runOnUiThread {
+                                    showToastOnce("Ошибка сети: ${e.message}")
+                                }
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                response.use {
+                                    if (response.isSuccessful) {
+                                        val bodyStr = response.body?.string()
+                                        if (!bodyStr.isNullOrEmpty()) {
+                                            handleSuccess(bodyStr)
+                                        } else {
+                                            runOnUiThread { showToastOnce("Пустой ответ от сервера") }
+                                        }
+                                    } else {
+                                        runOnUiThread {
+                                            showToastOnce("Неверный логин или пароль! (код ${response.code})")
+                                        }
+                                    }
+                                }
+                            }
+                        })
                     }
                 }
             }
+        })
     }
 
+    private fun saveToken(token: String) {
+        val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+        prefs.edit().putString("jwt_token", token).apply()
+    }
+
+    private fun showToastOnce(message: String) {
+        if (!alreadyShownToast) {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            Handler(Looper.getMainLooper()).postDelayed({
+                alreadyShownToast = false
+            }, 3000)
+            alreadyShownToast = true
+        }
+    }
 }
