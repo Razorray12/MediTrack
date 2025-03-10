@@ -3,26 +3,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph2"
-    app:startDestination="@id/First2Fragment">
-
+    app:startDestination="@id/registrationActivity">
+    <activity
+        android:id="@+id/registrationActivity"
+        android:name="com.example.meditrack.activities.RegistrationActivity"
+        android:label="activity_registration"
+        tools:layout="@layout/activity_registration" />
+    <activity
+        android:id="@+id/splashScreen"
+        android:name="com.example.meditrack.activities.SplashScreen"
+        android:label="activity_splash_screen"
+        tools:layout="@layout/activity_splash_screen" />
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.example.meditrack.activities.MainActivity"
+        android:label="activity_main"
+        tools:layout="@layout/activity_main" />
+    <activity
+        android:id="@+id/loginActivity"
+        android:name="com.example.meditrack.activities.LoginActivity"
+        android:label="activity_login"
+        tools:layout="@layout/activity_login" />
     <fragment
-        android:id="@+id/First2Fragment"
-        android:name="com.example.meditrack.activities.First2Fragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first2">
-
-        <action
-            android:id="@+id/action_First2Fragment_to_Second2Fragment"
-            app:destination="@id/Second2Fragment" />
-    </fragment>
+        android:id="@+id/profileFragment2"
+        android:name="com.example.meditrack.fragments.ProfileFragment"
+        android:label="fragment_add_patients"
+        tools:layout="@layout/fragment_add_patients" />
     <fragment
-        android:id="@+id/Second2Fragment"
-        android:name="com.example.meditrack.activities.Second2Fragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second2">
-
-        <action
-            android:id="@+id/action_Second2Fragment_to_First2Fragment"
-            app:destination="@id/First2Fragment" />
-    </fragment>
+        android:id="@+id/addPatientsFragment"
+        android:name="com.example.meditrack.fragments.AddPatientsFragment"
+        android:label="AddPatientsFragment" />
+    <dialog
+        android:id="@+id/registerDialogFragment"
+        android:name="com.example.meditrack.fragments.RegisterDialogFragment"
+        android:label="RegisterDialogFragment" />
+    <fragment
+        android:id="@+id/AIFragment"
+        android:name="com.example.meditrack.fragments.AIFragment"
+        android:label="AIFragment" />
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.meditrack.fragments.SearchFragment"
+        android:label="SearchFragment" />
 </navigation>

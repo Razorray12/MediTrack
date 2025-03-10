@@ -69,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
         viewFocus.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
 
-        val baseUrl = "http://192.168.0.1:8080"
+        val baseUrl = "http://192.168.0.159:8080"
         val doctorUrl = "$baseUrl/login/doctor"
         val nurseUrl = "$baseUrl/login/nurse"
 
@@ -80,14 +80,18 @@ class LoginActivity : AppCompatActivity() {
         val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
         val requestBody = jsonBody.toString().toRequestBody(mediaType)
 
-        fun handleSuccess(responseBody: String) {
+        fun handleSuccess(responseBody: String, userType: String) {
             try {
                 val json = JSONObject(responseBody)
                 val token = json.optString("token", "")
-                if (token.isNotEmpty()) {
-                    saveToken(token)
+                val id = json.optString("id", "")
+                if (token.isNotEmpty() && id.isNotEmpty()) {
                     val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                    prefs.edit().putString("user_email", email).apply()
+                    prefs.edit()
+                        .putString("jwt_token", token)
+                        .putString("user_id", id)
+                        .putString("user_type", userType)
+                        .apply()
 
                     runOnUiThread {
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
@@ -95,7 +99,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 } else {
                     runOnUiThread {
-                        showToastOnce("Токен не найден в ответе сервера")
+                        showToastOnce("Не найден token или id в ответе сервера")
                     }
                 }
             } catch (ex: Exception) {
@@ -128,7 +132,7 @@ class LoginActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         val bodyStr = response.body?.string()
                         if (!bodyStr.isNullOrEmpty()) {
-                            handleSuccess(bodyStr)
+                            handleSuccess(bodyStr, "doctor")
                         } else {
                             runOnUiThread { showToastOnce("Пустой ответ от сервера") }
                         }
@@ -150,7 +154,7 @@ class LoginActivity : AppCompatActivity() {
                                     if (response.isSuccessful) {
                                         val bodyStr = response.body?.string()
                                         if (!bodyStr.isNullOrEmpty()) {
-                                            handleSuccess(bodyStr)
+                                            handleSuccess(bodyStr, "nurse")
                                         } else {
                                             runOnUiThread { showToastOnce("Пустой ответ от сервера") }
                                         }
@@ -166,11 +170,6 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         })
-    }
-
-    private fun saveToken(token: String) {
-        val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-        prefs.edit().putString("jwt_token", token).apply()
     }
 
     private fun showToastOnce(message: String) {

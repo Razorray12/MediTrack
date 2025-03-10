@@ -110,7 +110,7 @@ class RegisterDialogFragment : DialogFragment() {
         val specialization = args.getString("specialization") ?: ""
         val userType = args.getString("userType") ?: ""
 
-        val baseUrl = "http://192.168.0.1:8080"
+        val baseUrl = "http://192.168.0.159:8080"
         val endpoint = if (userType == "Доктор") "/doctors" else "/nurses"
         val registrationUrl = "$baseUrl$endpoint"
 
