@@ -116,8 +116,18 @@
             android:layout_height="65dp"
             android:layout_weight="1"
             android:background="@drawable/ripple_effect"
-            android:contentDescription="@string/patients"
+            android:contentDescription="@string/ai"
             app:srcCompat="@drawable/library"
+            tools:ignore="RtlHardcoded,DuplicateSpeakableTextCheck" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/chat"
+            android:layout_width="0dp"
+            android:layout_height="65dp"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_effect"
+            android:contentDescription="@string/chat"
+            app:srcCompat="@drawable/outline_chat_24"
             tools:ignore="RtlHardcoded,DuplicateSpeakableTextCheck" />
 
         <androidx.appcompat.widget.AppCompatImageButton
