@@ -1,12 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.HospitalPatientInformationReferenceSystem" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="android:statusBarColor">@color/main</item>
+        <item name="colorControlActivated">@color/handles</item>
+        <item name="android:textColorHighlight">@color/highlights</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
-    <!-- Base application theme. -->
-    <style name="Base.Theme.MediTrack" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <style name="Base.Theme.MediTrack" parent="Base.Theme.HospitalPatientInformationReferenceSystem">
+
     </style>
+
 </resources>

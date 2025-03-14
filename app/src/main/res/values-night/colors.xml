@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <color name="black">#FF000000</color>
+    <color name="white">#525973</color> <!--#4A546F-->
+    <color name="main">#494646</color>
+    <color name="hint">#817F7F</color>
+    <color name="main_focused">#BAB4B4</color>
+    <color name="highlights">#5735D2F1</color>
+    <color name="handles">#8ABEE0</color>
+    <color name="focus">#54FFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="blue">#353E5D</color>
+    <color name="search">#A1597FF6</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#1DC300</color>
+</resources>

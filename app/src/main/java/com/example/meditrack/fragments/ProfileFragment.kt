@@ -17,6 +17,8 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -48,7 +50,6 @@ class ProfileFragment : Fragment() {
     private lateinit var rootView: View
     private lateinit var viewModel: ProfileLoadedViewModel
 
-    // Вьюхи
     private lateinit var emailTextView: TextView
     private lateinit var firstNameTextView: TextView
     private lateinit var lastNameTextView: TextView
@@ -97,6 +98,17 @@ class ProfileFragment : Fragment() {
         middleNameEditText = profileLayout.findViewById(R.id.edit_middle_name)
         experienceEditText = profileLayout.findViewById(R.id.edit_experience)
         specializationEditText = profileLayout.findViewById(R.id.edit_specialization)
+
+        val themeSwitch = scrollView.findViewById<SwitchCompat>(R.id.theme_switch)
+        themeSwitch.isChecked = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
+
+        themeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
+        }
 
         scrollView.setOnClickListener {
             scrollView.clearFocus()
@@ -413,7 +425,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun updateUIForEditing(editing: Boolean) {
-        // Управляем видимостью TextView и EditText в зависимости от режима редактирования
+
         if (editing) {
             emailTextView.visibility = View.GONE
             emailEditText.visibility = View.VISIBLE

@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import com.example.meditrack.R
 import com.example.meditrack.fragments.AIFragment
@@ -55,6 +56,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var searchView1: SearchView
     private lateinit var nameFragment: TextView
 
+    private val searchHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var searchRunnable: Runnable? = null
+    private val SEARCH_DELAY = 2000L
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        Objects.requireNonNull(supportActionBar)!!.title = ""
+        Objects.requireNonNull(supportActionBar)?.title = ""
         nameFragment = toolbar.findViewById(R.id.name_fragment)
 
         saveButton = findViewById(R.id.save_button)
@@ -375,17 +380,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupSearchView() {
         val searchView = findViewById<SearchView>(R.id.action_search)
+
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
             override fun onQueryTextSubmit(query: String): Boolean {
                 val searchFragment = supportFragmentManager.findFragmentByTag("search_fragment") as? SearchFragment
                 searchFragment?.onQueryTextSubmit(query)
                 return true
             }
+
             override fun onQueryTextChange(newText: String): Boolean {
                 onQueryTextSubmit(newText)
                 return true
             }
         })
+
         searchView.setOnCloseListener {
             val searchFragment = supportFragmentManager.findFragmentByTag("search_fragment") as? SearchFragment
             searchFragment?.showAllPatients()
@@ -395,14 +404,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupSearchView1() {
         val searchView1 = findViewById<SearchView>(R.id.ai_search1)
+
+        searchView1.setOnSearchClickListener {
+            val aiFragment = supportFragmentManager.findFragmentByTag("ai_fragment") as? AIFragment
+            aiFragment?.showHistoryDropdown(searchView1)
+        }
+
         searchView1.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
             override fun onQueryTextSubmit(query: String): Boolean {
                 val aiFragment = supportFragmentManager.findFragmentByTag("ai_fragment") as? AIFragment
                 aiFragment?.onQueryTextSubmit(query)
                 return true
             }
+
             override fun onQueryTextChange(newText: String): Boolean {
-                return false
+                scheduleAutoSearch(newText)
+                return true
             }
         })
     }
@@ -496,6 +514,20 @@ class MainActivity : AppCompatActivity() {
             is AIFragment -> aiImageButton.setColorFilter(white)
             else -> patientsImageButton.setColorFilter(white)
         }
+    }
+
+    private fun scheduleAutoSearch(query: String) {
+        if (query.trim().isEmpty()) {
+
+            searchRunnable?.let { searchHandler.removeCallbacks(it) }
+            return
+        }
+        searchRunnable?.let { searchHandler.removeCallbacks(it) }
+        searchRunnable = Runnable {
+            val aiFragment = supportFragmentManager.findFragmentByTag("ai_fragment") as? AIFragment
+            aiFragment?.onQueryTextSubmit(query)
+        }
+        searchHandler.postDelayed(searchRunnable!!, SEARCH_DELAY)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

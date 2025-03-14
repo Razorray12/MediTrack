@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ListPopupWindow
 import android.widget.RadioButton
 import android.widget.ScrollView
 import android.widget.TextView
@@ -17,6 +18,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.meditrack.R
+import com.example.meditrack.adapters.HistoryAdapter
+import com.example.meditrack.ai.AiSearchHistoryManager
 import com.example.meditrack.ai.DiseaseRequest
 import com.example.meditrack.ai.DiseaseResponse
 import com.example.meditrack.ai.Message
@@ -25,7 +28,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -52,11 +54,16 @@ class AIFragment : Fragment() {
     private lateinit var gson: Gson
 
     private lateinit var refreshButton: Button
+    private lateinit var refreshLayout: LinearLayout
     private var lastQuery: String = ""
+
+    private lateinit var historyManager: AiSearchHistoryManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val apiKey = "yJ2EuRaojKn7nhRrSPmWPWR6YNQAINVY"
+
+        historyManager = AiSearchHistoryManager(requireContext())
 
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
@@ -112,6 +119,7 @@ class AIFragment : Fragment() {
             }
         }
 
+        refreshLayout = view.findViewById(R.id.layoutRefresh)
         refreshButton = view.findViewById(R.id.buttonRefresh)
         refreshButton.setOnClickListener {
             if (lastQuery.isNotEmpty()) {
@@ -128,7 +136,7 @@ class AIFragment : Fragment() {
         constraintProgressBar.isVisible = true
         scrollView.isVisible = false
         scrollView2.isVisible = false
-        refreshButton.visibility = View.GONE
+        refreshLayout.visibility = View.GONE
 
         lifecycleScope.launch {
             try {
@@ -144,24 +152,24 @@ class AIFragment : Fragment() {
                 ) {
                     diseaseNameView.text = "Информация не найдена."
                     diseasesSymptomsView.text = "Информация не найдена."
-                    refreshButton.visibility = View.VISIBLE
+                    refreshLayout.visibility = View.VISIBLE
                 } else {
                     if (symptoms) {
                         val diseaseInfoList = parseDiseaseSymptomsInfo(chatResponse.choices[0].message.content.toString())
                         if (diseaseInfoList.isEmpty()) {
                             diseasesSymptomsView.text = "Информация не найдена."
-                            refreshButton.visibility = View.VISIBLE
+                            refreshLayout.visibility = View.VISIBLE
                         } else {
-                            refreshButton.visibility = View.GONE
+                            refreshLayout.visibility = View.GONE
                             displayDiseaseSymptomsInfo(chatResponse)
                         }
                     } else {
                         val diseaseInfo = parseDiseaseInfo(chatResponse.choices[0].message.content.toString())
                         if (diseaseInfo["diseaseName"]?.toString()?.isEmpty() != false) {
                             diseaseNameView.text = "Информация не найдена."
-                            refreshButton.visibility = View.VISIBLE
+                            refreshLayout.visibility = View.VISIBLE
                         } else {
-                            refreshButton.visibility = View.GONE
+                            refreshLayout.visibility = View.GONE
                             displayDiseaseInfo(chatResponse)
                         }
                     }
@@ -176,7 +184,7 @@ class AIFragment : Fragment() {
                 Log.e("AIFragment", "Ошибка извлечения данных", e)
                 diseaseNameView.text = "Информация не найдена."
                 constraintProgressBar.isVisible = false
-                refreshButton.visibility = View.VISIBLE
+                refreshLayout.visibility = View.VISIBLE
             }
         }
     }
@@ -303,9 +311,44 @@ class AIFragment : Fragment() {
         if (!diseaseButton.isChecked && !symptomsButton.isChecked) {
             Toast.makeText(context, "Выберите фильтр поиска по заболеваниям!", Toast.LENGTH_SHORT).show()
         } else {
+            historyManager.addQuery(query)
             lifecycleScope.launch {
                 fetchData(query, isSymptom)
             }
+        }
+    }
+
+    fun showHistoryDropdown(anchor: View) {
+        val historyList = historyManager.getHistory()
+        if (historyList.isEmpty()) return
+
+        val adapter = HistoryAdapter(requireContext(), historyList)
+        val listPopupWindow = ListPopupWindow(requireContext()).apply {
+            anchorView = anchor
+            setAdapter(adapter)
+            isModal = true
+        }
+
+        anchor.post {
+            val screenWidth = resources.displayMetrics.widthPixels
+            val fixedWidth = (screenWidth * 0.9).toInt()
+
+            listPopupWindow.width = fixedWidth
+
+            listPopupWindow.setOnItemClickListener { _, _, position, _ ->
+                if (position < historyList.size) {
+
+                    val selectedQuery = historyList[position]
+                    onQueryTextSubmit(selectedQuery)
+                } else {
+
+                    historyManager.clearHistory()
+                    Toast.makeText(requireContext(), "История очищена", Toast.LENGTH_SHORT).show()
+                }
+                listPopupWindow.dismiss()
+            }
+
+            listPopupWindow.show()
         }
     }
 }
