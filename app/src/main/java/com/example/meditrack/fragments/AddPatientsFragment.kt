@@ -9,40 +9,28 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.CheckBox
-import android.widget.CompoundButton
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import com.example.meditrack.R
 import com.example.meditrack.activities.MainActivity
-import com.example.meditrack.entities.Doctor
 import com.example.meditrack.entities.Patient
 import com.example.meditrack.entities.VitalSigns
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.*
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Objects
+import java.util.*
 
 class AddPatientsFragment : Fragment() {
-    private lateinit var addLayout: LinearLayout
-    private lateinit var addscrollView: NestedScrollView
 
-    private var database: FirebaseDatabase? = null
-    var patientsRef: DatabaseReference? = null
+    private lateinit var addLayout: LinearLayout
+    private lateinit var addScrollView: NestedScrollView
 
     private var firstName: EditText? = null
     private var lastName: EditText? = null
@@ -64,6 +52,7 @@ class AddPatientsFragment : Fragment() {
 
     private var isAlreadyShown = false
 
+    private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,25 +64,18 @@ class AddPatientsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val rootView: View = inflater.inflate(R.layout.fragment_add_patients, container, false)
-
+        val rootView = inflater.inflate(R.layout.fragment_add_patients, container, false)
 
         addLayout = rootView.findViewById(R.id.linear_add)
-        addscrollView = rootView.findViewById(R.id.add_scroll)
+        addScrollView = rootView.findViewById(R.id.add_scroll)
 
-        addscrollView.setOnClickListener { view: View ->
-            addscrollView.clearFocus()
-            val imm =
-                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val hideKeyboardListener = View.OnClickListener { view ->
+            view.clearFocus()
+            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
-
-        addLayout.setOnClickListener { view: View ->
-            addLayout.clearFocus()
-            val imm =
-                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
+        addScrollView.setOnClickListener(hideKeyboardListener)
+        addLayout.setOnClickListener(hideKeyboardListener)
 
         firstName = rootView.findViewById(R.id.edit_first_name)
         lastName = rootView.findViewById(R.id.edit_last_name)
@@ -114,34 +96,25 @@ class AddPatientsFragment : Fragment() {
         bloodGlucose = rootView.findViewById(R.id.edit_vitalsigns5)
 
         val buttonShowSigns = rootView.findViewById<ImageButton>(R.id.button_plus_signs)
-
         buttonShowSigns.setOnClickListener(object : View.OnClickListener {
-            var isRotated: Boolean = false
-
+            var isRotated = false
             override fun onClick(v: View) {
-                val rotate: ObjectAnimator
                 val linearLayout = rootView.findViewById<LinearLayout>(R.id.linear_layout)
+                val rotate: ObjectAnimator
                 if (!isRotated) {
                     rotate = ObjectAnimator.ofFloat(buttonShowSigns, "rotation", 0f, 180f)
                     isRotated = true
-
-                    val fadeIn = ObjectAnimator.ofFloat(linearLayout, "alpha", 0f, 1f)
-                    fadeIn.setDuration(300)
-
+                    val fadeIn = ObjectAnimator.ofFloat(linearLayout, "alpha", 0f, 1f).setDuration(300)
                     val animatorSet = AnimatorSet()
                     animatorSet.playTogether(fadeIn)
                     animatorSet.start()
 
                     linearLayout.visibility = View.VISIBLE
-
-                    addscrollView.post { addscrollView.fullScroll(View.FOCUS_DOWN) }
+                    addScrollView.post { addScrollView.fullScroll(View.FOCUS_DOWN) }
                 } else {
                     rotate = ObjectAnimator.ofFloat(buttonShowSigns, "rotation", 180f, 0f)
                     isRotated = false
-
-                    val fadeOut = ObjectAnimator.ofFloat(linearLayout, "alpha", 1f, 0f)
-                    fadeOut.setDuration(300)
-
+                    val fadeOut = ObjectAnimator.ofFloat(linearLayout, "alpha", 1f, 0f).setDuration(300)
                     val animatorSet = AnimatorSet()
                     animatorSet.playTogether(fadeOut)
                     animatorSet.start()
@@ -149,7 +122,6 @@ class AddPatientsFragment : Fragment() {
                     animatorSet.addListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             super.onAnimationEnd(animation)
-
                             linearLayout.visibility = View.GONE
                         }
                     })
@@ -159,16 +131,11 @@ class AddPatientsFragment : Fragment() {
             }
         })
 
-        isMale.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-            if (isChecked) {
-                isFemale.setChecked(false)
-            }
+        isMale.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) isFemale.isChecked = false
         }
-
-        isFemale.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-            if (isChecked) {
-                isMale.setChecked(false)
-            }
+        isFemale.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) isMale.isChecked = false
         }
 
         return rootView
@@ -181,7 +148,6 @@ class AddPatientsFragment : Fragment() {
             (requireActivity() as MainActivity).setTextForSearch()
             (requireActivity() as MainActivity).showSearchView()
             (requireActivity() as MainActivity).closeFragmentAdd()
-
             return true
         }
         return super.onOptionsItemSelected(item)
@@ -189,154 +155,159 @@ class AddPatientsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        (requireActivity() as MainActivity).setToolbarSaveButtonListener1 { v ->
-            database = FirebaseDatabase.getInstance()
-            patientsRef = database!!.getReference("users/patients")
-            val patient = Patient()
-            val vitalSigns = VitalSigns()
 
-
-            val SfirstName = firstName!!.text.toString()
-            val SlastName = lastName!!.text.toString()
-            val SmiddleName = middleName!!.text.toString()
-            val SbirthDate = birthDate!!.text.toString()
-            val SphoneNumber = phoneNumber!!.text.toString()
-            val Sdiagnosis = diagnosis!!.text.toString()
-            val Sroom = room!!.text.toString()
-            val Smedications = medications!!.text.toString()
-            val Sallergies = allergies!!.text.toString()
-            val Stemperature = temperature!!.text.toString()
-            val SheartRate = heartRate!!.text.toString()
-            val SrespiratoryRate = respiratoryRate!!.text.toString()
-            val SbloodPressure = bloodPressure!!.text.toString()
-            val SoxygenSaturation = oxygenSaturation!!.text.toString()
-            val SbloodGlucose = bloodGlucose!!.text.toString()
-
-            if (SfirstName.isEmpty() || SmiddleName.isEmpty() || SlastName.isEmpty() || Sroom.isEmpty()) {
-                if (!isAlreadyShown) {
-                    Toast.makeText(
-                        activity,
-                        "Заполните все необходимые поля",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        isAlreadyShown = false
-                    }, 3000)
-                    isAlreadyShown = true
-                }
-                return@setToolbarSaveButtonListener1
-            }
-            if (isMale.isChecked) {
-                patient.sex ="Мужчина"
-            } else if (isFemale.isChecked) {
-                patient.sex = "Женщина"
-            } else {
-                if (!isAlreadyShown) {
-                    Toast.makeText(activity, "Выберите пол пациента!", Toast.LENGTH_SHORT)
-                        .show()
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        isAlreadyShown = false
-                    }, 3000)
-                    isAlreadyShown = true
-                }
-                return@setToolbarSaveButtonListener1
-            }
-
-            val user = FirebaseAuth.getInstance().currentUser
-            val userId =
-                Objects.requireNonNull(user)!!.uid
-
-            val doctorRef =
-                FirebaseDatabase.getInstance().getReference("users/doctors").child(userId)
-
-            doctorRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val doctor: Doctor? = dataSnapshot.getValue(Doctor::class.java)
-                    val mainDoctor: String = if (doctor != null) {
-                        val lastName = doctor.lastName ?: ""
-                        val firstName = doctor.firstName?.firstOrNull()?.toString() ?: ""
-                        val middleName = doctor.middleName?.firstOrNull()?.toString() ?: ""
-
-                        "$lastName ${firstName.uppercase()}.${middleName.uppercase()}."
-                    } else {
-                        ""
-                    }
-
-                    patient.firstName = SfirstName
-                    patient.lastName = SlastName
-                    patient.middleName = SmiddleName
-                    patient.birthDate = SbirthDate
-                    patient.phoneNumber = SphoneNumber
-                    patient.diagnosis = Sdiagnosis
-                    patient.room = Sroom
-                    patient.medications = Smedications
-                    patient.allergies = Sallergies
-
-                    val calendar = Calendar.getInstance()
-                    val today = calendar.time
-
-                    @SuppressLint("SimpleDateFormat") val format =
-                        SimpleDateFormat("dd.MM.yy")
-                    val dateToStr = format.format(today)
-
-                    patient.admissionDate = dateToStr
-
-
-
-                    patient.mainDoctor = mainDoctor
-                    vitalSigns.temperature = Stemperature
-                    vitalSigns.heartRate = SheartRate
-                    vitalSigns.respiratoryRate = SrespiratoryRate
-                    vitalSigns.bloodPressure = SbloodPressure
-                    vitalSigns.oxygenSaturation = SoxygenSaturation
-                    vitalSigns.bloodGlucose = SbloodGlucose
-
-                    patient.vitalSigns = vitalSigns
-
-                    val id = patientsRef!!.push().key ?: ""
-
-                    patient.id = id
-
-                    patientsRef!!.child(id)
-                        .setValue(patient)
-                }
-
-                override fun onCancelled(databaseError: DatabaseError) {
-                }
-            })
-            (requireActivity() as MainActivity).closeFragmentAdd()
-            (requireActivity() as MainActivity).showSearchView()
-            (requireActivity() as MainActivity).setTextForSearch()
-            (requireActivity() as MainActivity).closeSaveButton1()
+        (requireActivity() as MainActivity).setToolbarSaveButtonListener1 {
+            savePatient()
         }
+    }
+
+    private fun savePatient() {
+        val sFirstName = firstName?.text.toString().trim()
+        val sLastName = lastName?.text.toString().trim()
+        val sMiddleName = middleName?.text.toString().trim()
+        val sBirthDate = birthDate?.text.toString().trim()
+        val sPhoneNumber = phoneNumber?.text.toString().trim()
+        val sDiagnosis = diagnosis?.text.toString().trim()
+        val sRoom = room?.text.toString().trim()
+        val sMedications = medications?.text.toString().trim()
+        val sAllergies = allergies?.text.toString().trim()
+        val sTemperature = temperature?.text.toString().trim()
+        val sHeartRate = heartRate?.text.toString().trim()
+        val sRespiratoryRate = respiratoryRate?.text.toString().trim()
+        val sBloodPressure = bloodPressure?.text.toString().trim()
+        val sOxygenSaturation = oxygenSaturation?.text.toString().trim()
+        val sBloodGlucose = bloodGlucose?.text.toString().trim()
+
+        if (sFirstName.isEmpty() || sMiddleName.isEmpty() || sLastName.isEmpty() || sRoom.isEmpty()) {
+            if (!isAlreadyShown) {
+                Toast.makeText(requireContext(), "Заполните все необходимые поля", Toast.LENGTH_SHORT).show()
+                Handler(Looper.getMainLooper()).postDelayed({ isAlreadyShown = false }, 3000)
+                isAlreadyShown = true
+            }
+            return
+        }
+
+        val sexString = when {
+            isMale.isChecked -> "Мужчина"
+            isFemale.isChecked -> "Женщина"
+            else -> {
+                if (!isAlreadyShown) {
+                    Toast.makeText(requireContext(), "Выберите пол пациента!", Toast.LENGTH_SHORT).show()
+                    Handler(Looper.getMainLooper()).postDelayed({ isAlreadyShown = false }, 3000)
+                    isAlreadyShown = true
+                }
+                return
+            }
+        }
+
+        @SuppressLint("SimpleDateFormat")
+        val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
+        val admissionDateStr = dateFormat.format(Date())
+
+        val vitalsObject = JSONObject().apply {
+            put("temperature", sTemperature)
+            put("heartRate", sHeartRate)
+            put("respiratoryRate", sRespiratoryRate)
+            put("bloodPressure", sBloodPressure)
+            put("oxygenSaturation", sOxygenSaturation)
+            put("bloodGlucose", sBloodGlucose)
+        }
+
+        val patientObject = JSONObject().apply {
+            put("firstName", sFirstName)
+            put("lastName", sLastName)
+            put("middleName", sMiddleName)
+            put("sex", sexString)
+            put("birthDate", sBirthDate)
+            put("phoneNumber", sPhoneNumber)
+            put("diagnosis", sDiagnosis)
+            put("room", sRoom)
+            put("medications", sMedications)
+            put("allergies", sAllergies)
+            put("admissionDate", admissionDateStr)
+            put("mainDoctor", "")
+            put("vitalSigns", vitalsObject)
+        }
+
+        val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        val token = prefs.getString("jwt_token", null) ?: ""
+        if (token.isEmpty()) {
+            Toast.makeText(requireContext(), "Нет токена (jwt_token). Авторизуйтесь заново.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val baseUrl = "http://192.168.0.159:8080"
+        val url = "$baseUrl/patients"
+
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val requestBody = patientObject.toString().toRequestBody(mediaType)
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                requireActivity().runOnUiThread {
+                    Toast.makeText(requireContext(), "Ошибка сохранения: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(
+                                requireContext(),
+                                "Ошибка сохранения: код ${response.code}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(
+                                requireContext(),
+                                "Пациент добавлен!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            (requireActivity() as MainActivity).closeFragmentAdd()
+                            (requireActivity() as MainActivity).showSearchView()
+                            (requireActivity() as MainActivity).setTextForSearch()
+                            (requireActivity() as MainActivity).closeSaveButton1()
+                        }
+                    }
+                }
+            }
+        })
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-
         if (hidden) {
-            firstName!!.setText("")
-            lastName!!.setText("")
-            middleName!!.setText("")
-            birthDate!!.setText("")
-            phoneNumber!!.setText("")
-            diagnosis!!.setText("")
-            room!!.setText("")
-            medications!!.setText("")
-            allergies!!.setText("")
-            temperature!!.setText("")
-            heartRate!!.setText("")
-            respiratoryRate!!.setText("")
-            bloodPressure!!.setText("")
-            oxygenSaturation!!.setText("")
-            bloodGlucose!!.setText("")
+            firstName?.setText("")
+            lastName?.setText("")
+            middleName?.setText("")
+            birthDate?.setText("")
+            phoneNumber?.setText("")
+            diagnosis?.setText("")
+            room?.setText("")
+            medications?.setText("")
+            allergies?.setText("")
+            temperature?.setText("")
+            heartRate?.setText("")
+            respiratoryRate?.setText("")
+            bloodPressure?.setText("")
+            oxygenSaturation?.setText("")
+            bloodGlucose?.setText("")
             (requireActivity() as MainActivity).closeSaveButton1()
 
             isMale.isChecked = false
             isFemale.isChecked = false
 
-            val imm =
-                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(requireView().windowToken, 0)
         }
     }

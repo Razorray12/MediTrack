@@ -1,6 +1,7 @@
 package com.example.meditrack.activities
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.text.Html
 import android.view.Menu
@@ -16,7 +17,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import com.example.meditrack.R
 import com.example.meditrack.fragments.AIFragment
@@ -72,6 +72,10 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        val prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        isDoctor = prefs.getString("user_type",null).equals("doctor", ignoreCase = true)
+
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         Objects.requireNonNull(supportActionBar)?.title = ""
@@ -103,6 +107,8 @@ class MainActivity : AppCompatActivity() {
         addedPatientsImageButton = findViewById(R.id.added_patients)
         profileImageButton = findViewById(R.id.profile)
         aiImageButton = findViewById(R.id.ai_search)
+
+        addedPatientsImageButton.visibility = if (isDoctor) View.VISIBLE else View.GONE
 
         if (savedInstanceState == null) {
             searchFragment = SearchFragment()
