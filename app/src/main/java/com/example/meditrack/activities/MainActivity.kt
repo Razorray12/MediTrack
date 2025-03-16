@@ -120,9 +120,9 @@ class MainActivity : AppCompatActivity() {
             chatFragment = ChatFragment()
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, searchFragment!!, "search_fragment")
+                .add(R.id.fragment_container, chatFragment!!, "chat_fragment")
                 .commit()
-            currentFragment = searchFragment
+            currentFragment = chatFragment
 
         } else {
             searchFragment = supportFragmentManager.findFragmentByTag("search_fragment") as? SearchFragment

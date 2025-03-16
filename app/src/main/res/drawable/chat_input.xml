@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/handles"/>
-    <stroke
-        android:width="2dp"
-        android:color="@color/hint" />
+    <solid android:color="@color/blue"/>
+    <stroke android:color="@color/handles"
+        android:width="2dp"/>
     <padding
         android:left="12dp"
         android:top="12dp"

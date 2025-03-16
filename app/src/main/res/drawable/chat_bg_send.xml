@@ -1,0 +1,38 @@
+<!-- res/drawable/bordered_background.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Фон кнопки: голубой (blue) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/blue" />
+        </shape>
+    </item>
+
+    <!-- Верхняя граница: темно‐синяя, 2dp -->
+    <item
+        android:gravity="top">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/handles" />
+            <size android:height="2dp" />
+        </shape>
+    </item>
+
+    <!-- Правая граница: темно‐синяя, 2dp -->
+    <item
+        android:gravity="start">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/handles" />
+            <size android:width="2dp" />
+        </shape>
+    </item>
+
+    <!-- Нижняя граница: темно‐синяя, 2dp -->
+    <item
+        android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/handles" />
+            <size android:height="2dp" />
+        </shape>
+    </item>
+
+</layer-list>

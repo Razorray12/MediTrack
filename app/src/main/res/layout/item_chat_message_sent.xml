@@ -6,7 +6,6 @@
     android:layout_height="wrap_content"
     android:padding="8dp">
 
-    <!-- Текст сообщения -->
     <TextView
         android:id="@+id/tv_message"
         android:layout_width="wrap_content"
@@ -14,12 +13,11 @@
         android:background="@drawable/bg_message_sent"
         android:padding="12dp"
         android:text="Сообщение"
-        android:textColor="@color/handles"
+        android:textColor="@color/white"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Время отправки -->
     <TextView
         android:id="@+id/tv_timestamp"
         android:layout_width="wrap_content"

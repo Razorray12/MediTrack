@@ -93,12 +93,14 @@ class LoginActivity : AppCompatActivity() {
                 val json = JSONObject(responseBody)
                 val token = json.optString("token", "")
                 val id = json.optString("id", "")
+                val fio = json.optString("fio","")
                 if (token.isNotEmpty() && id.isNotEmpty()) {
                     val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
                     prefs.edit()
                         .putString("jwt_token", token)
                         .putString("user_id", id)
                         .putString("user_type", userType)
+                        .putString("fio",fio)
                         .apply()
 
                     runOnUiThread {

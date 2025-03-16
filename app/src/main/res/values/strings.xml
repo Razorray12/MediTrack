@@ -76,5 +76,6 @@
     <string name="chat">Чат</string>
     <string name="clear_history">Очистить историю</string>
     <string name="dark_theme">Тёмная тема</string>
+    <string name="send_message">Отправить</string>
 
 </resources>
