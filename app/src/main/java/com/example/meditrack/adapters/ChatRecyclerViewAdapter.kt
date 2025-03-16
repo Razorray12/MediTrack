@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meditrack.R
-import com.example.myapp.placeholder.ChatMessage
+import com.example.meditrack.holders.ChatMessage
 
 private const val VIEW_TYPE_RECEIVED = 0
 private const val VIEW_TYPE_SENT = 1

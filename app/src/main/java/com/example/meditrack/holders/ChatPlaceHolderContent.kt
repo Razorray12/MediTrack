@@ -1,4 +1,4 @@
-package com.example.myapp.placeholder
+package com.example.meditrack.holders
 
 data class ChatMessage(
     val id: String,

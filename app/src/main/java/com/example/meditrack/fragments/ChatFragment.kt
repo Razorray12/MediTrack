@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.meditrack.adapters.ChatRecyclerViewAdapter
 import com.example.meditrack.databinding.FragmentChatBinding
-import com.example.myapp.placeholder.ChatMessage
+import com.example.meditrack.holders.ChatMessage
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
