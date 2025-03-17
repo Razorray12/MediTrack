@@ -162,6 +162,7 @@ class AddPatientsFragment : Fragment() {
     }
 
     private fun savePatient() {
+        val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         val sFirstName = firstName?.text.toString().trim()
         val sLastName = lastName?.text.toString().trim()
         val sMiddleName = middleName?.text.toString().trim()
@@ -177,6 +178,7 @@ class AddPatientsFragment : Fragment() {
         val sBloodPressure = bloodPressure?.text.toString().trim()
         val sOxygenSaturation = oxygenSaturation?.text.toString().trim()
         val sBloodGlucose = bloodGlucose?.text.toString().trim()
+        val mainDoctor = prefs.getString("fio",null)
 
         if (sFirstName.isEmpty() || sMiddleName.isEmpty() || sLastName.isEmpty() || sRoom.isEmpty()) {
             if (!isAlreadyShown) {
@@ -225,11 +227,10 @@ class AddPatientsFragment : Fragment() {
             put("medications", sMedications)
             put("allergies", sAllergies)
             put("admissionDate", admissionDateStr)
-            put("mainDoctor", "")
+            put("mainDoctor", mainDoctor)
             put("vitalSigns", vitalsObject)
         }
 
-        val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         val token = prefs.getString("jwt_token", null) ?: ""
         if (token.isEmpty()) {
             Toast.makeText(requireContext(), "Нет токена (jwt_token). Авторизуйтесь заново.", Toast.LENGTH_SHORT).show()
