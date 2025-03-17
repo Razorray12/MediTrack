@@ -1,6 +1,7 @@
 package com.example.meditrack.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -118,18 +120,20 @@ class ChatFragment : Fragment() {
                     val jsonArray = org.json.JSONArray(bodyStr)
                     val messages = mutableListOf<ChatMessage>()
 
-                    val currentUserFio = prefs.getString("fio", "") ?: ""
+                    val currentUserId = prefs.getString("user_id", "") ?: ""
+
                     for (i in 0 until jsonArray.length()) {
                         val obj = jsonArray.getJSONObject(i)
-                        val sender = obj.optString("sender", "")
+                        val senderName = obj.optString("sender", "")
+                        val senderId = obj.optString("senderId", "")
                         val message = obj.optString("message", "")
                         val timestamp = obj.optString("timestamp", "")
-                        val isMe = (sender == currentUserFio)
+                        val isMe = (senderId == currentUserId)
 
                         messages.add(
                             ChatMessage(
                                 id = UUID.randomUUID().toString(),
-                                senderName = sender,
+                                senderName = senderName,
                                 content = message,
                                 timestamp = timestamp,
                                 isSentByMe = isMe
@@ -168,13 +172,19 @@ class ChatFragment : Fragment() {
             override fun onMessage(webSocket: WebSocket, text: String) {
 
                 val dateStr = getFormattedTime()
-                val (sender, content) = parseServerMessage(text)
-                val currentUser = userFio ?: ""
-                val isMe = (sender == currentUser)
+                val obj = JSONObject(text)
+                val senderId = obj.optString("senderId", "")
+                val senderName = obj.optString("senderName", "")
+                val content = obj.optString("message", "")
+
+                val prefs = requireActivity().getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE)
+                val currentUserId = prefs.getString("user_id", "") ?: ""
+
+                val isMe = (senderId == currentUserId)
 
                 val newMsg = ChatMessage(
                     id = UUID.randomUUID().toString(),
-                    senderName = sender,
+                    senderName = senderName,
                     content = content,
                     timestamp = dateStr,
                     isSentByMe = isMe
@@ -196,18 +206,6 @@ class ChatFragment : Fragment() {
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             }
         })
-    }
-
-    private fun parseServerMessage(serverText: String): Pair<String, String> {
-        val regex = Regex("\\[(.*?)\\]\\s+(.*)")
-        val match = regex.find(serverText)
-        return if (match != null && match.groups.size >= 2) {
-            val g1 = match.groups[1]?.value ?: ""
-            val g2 = match.groups[2]?.value ?: ""
-            Pair(g1, g2)
-        } else {
-            Pair("Server", serverText)
-        }
     }
 
     private fun getFormattedTime(): String {
