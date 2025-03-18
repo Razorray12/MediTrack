@@ -91,20 +91,12 @@ class SearchFragment : Fragment() {
         return rootView
     }
 
-    override fun onResume() {
-        super.onResume()
-        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+    override fun onDestroyView() {
+        super.onDestroyView()
 
-        loadPatientsFromServer(requireView())
-        connectPatientUpdates()
-    }
-
-    override fun onPause() {
-        super.onPause()
         patientUpdatesWebSocket?.close(1000, "Fragment paused")
         patientUpdatesWebSocket = null
     }
-
     private fun loadPatientsFromServer(rootView: View) {
         val url = "http://192.168.0.159:8080/patients"
 
@@ -136,6 +128,14 @@ class SearchFragment : Fragment() {
                         newPatients.add(patient)
                     }
 
+                    newPatients.sortWith(
+                        compareBy(
+                            { it.firstName?.lowercase(Locale.getDefault()) ?: "" },
+                            { it.middleName?.lowercase(Locale.getDefault()) ?: "" },
+                            { it.lastName?.lowercase(Locale.getDefault()) ?: "" }
+                        )
+                    )
+
                     requireActivity().runOnUiThread {
                         patients = newPatients
                         patientAdapter?.setRecyclerPatients(newPatients)
@@ -153,6 +153,14 @@ class SearchFragment : Fragment() {
                 }
             }
         })
+    }
+    override fun onResume() {
+        super.onResume()
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+
+        if (patientUpdatesWebSocket == null) {
+            connectPatientUpdates()
+        }
     }
 
     private fun connectPatientUpdates() {
@@ -172,19 +180,41 @@ class SearchFragment : Fragment() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onMessage(webSocket: WebSocket, text: String) {
                 requireActivity().runOnUiThread {
                     try {
                         val obj = JSONObject(text)
-                        val newPatient = parsePatient(obj)
-                        val index = patients.indexOfFirst { it.id == newPatient.id }
-                        if (index >= 0) {
-                            patients[index] = newPatient
-                            patientAdapter?.notifyItemChanged(index)
+
+                        if (obj.optString("action", "") == "delete") {
+                            val patientId = obj.optString("id", "")
+                            if (patientId.isNotEmpty()) {
+                                val index = patients.indexOfFirst { it.id == patientId }
+                                if (index != -1) {
+                                    patients.removeAt(index)
+                                    patientAdapter?.setRecyclerPatients(patients)
+                                    patientAdapter?.notifyItemRemoved(index)
+                                }
+                            }
                         } else {
-                            patients.add(0, newPatient)
-                            patientAdapter?.notifyItemInserted(0)
-                            recyclerView.scrollToPosition(0)
+                            val newPatient = parsePatient(obj)
+                            val index = patients.indexOfFirst { it.id == newPatient.id }
+                            if (index >= 0) {
+                                patients[index] = newPatient
+                            } else {
+                                patients.add(newPatient)
+                            }
+
+                            patients.sortWith(
+                                compareBy(
+                                    { it.firstName?.lowercase(Locale.getDefault()) ?: "" },
+                                    { it.middleName?.lowercase(Locale.getDefault()) ?: "" },
+                                    { it.lastName?.lowercase(Locale.getDefault()) ?: "" }
+                                )
+                            )
+
+                            patientAdapter?.setRecyclerPatients(patients)
+                            patientAdapter?.notifyDataSetChanged()
                         }
                     } catch (e: Exception) {
                         loadPatientsFromServer(requireView())
