@@ -441,6 +441,10 @@ class ProfileFragment : Fragment() {
                 specializationTextView.visibility = View.GONE
                 specializationEditText.visibility = View.VISIBLE
             }
+            else {
+                specializationTextView.visibility = View.GONE
+                specializationEditText.visibility = View.GONE
+            }
         } else {
             emailTextView.visibility = View.VISIBLE
             emailEditText.visibility = View.GONE
@@ -454,6 +458,10 @@ class ProfileFragment : Fragment() {
             experienceEditText.visibility = View.GONE
             if (isDoctor) {
                 specializationTextView.visibility = View.VISIBLE
+                specializationEditText.visibility = View.GONE
+            }
+            else {
+                specializationTextView.visibility = View.GONE
                 specializationEditText.visibility = View.GONE
             }
         }
@@ -522,6 +530,11 @@ class ProfileFragment : Fragment() {
             }, 3000)
             alreadyShownToast = true
         }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        viewModel.isEditing.value = false
     }
 
     fun onHideEditText() {

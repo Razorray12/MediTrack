@@ -15,12 +15,13 @@ class Patient {
     var allergies: String? = null
     var vitalSigns: VitalSigns? = null
     var mainDoctor: String? = null
+    var mainDoctorID: String? = null
 
     constructor(
         id: String?, firstName: String?, lastName: String?, middleName: String?,
         birthDate: String?, phoneNumber: String?, diagnosis: String?,
         room: String?, admissionDate: String?, allergies: String?,
-        medications: String?, vitalSigns: VitalSigns?, sex: String?, mainDoctor: String?
+        medications: String?, vitalSigns: VitalSigns?, sex: String?, mainDoctor: String?, mainDoctorID: String?
     ) {
         this.id = id
         this.firstName = firstName
@@ -36,6 +37,7 @@ class Patient {
         this.vitalSigns = vitalSigns
         this.sex = sex
         this.mainDoctor = mainDoctor
+        this.mainDoctorID = mainDoctorID
     }
 
     constructor()

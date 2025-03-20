@@ -6,59 +6,52 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meditrack.R
-import com.example.meditrack.entities.Doctor
 import com.example.meditrack.entities.Patient
 import com.example.meditrack.holders.PatientViewHolder
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import java.util.Objects
 import java.util.Random
 
-class SelectedPatientAdapter(var context: Context, patients: ArrayList<Patient>) :
-    RecyclerView.Adapter<PatientViewHolder>() {
-    private var listener: OnItemClickListener? = null
-    var patients: ArrayList<Patient>
-    var menAvatars: IntArray =
-        intArrayOf(R.drawable.img_2, R.drawable.img_3, R.drawable.img_6, R.drawable.img_8)
-    var womenAvatars: IntArray =
-        intArrayOf(R.drawable.img_1, R.drawable.img_4, R.drawable.img_5, R.drawable.img_7)
+class SelectedPatientAdapter(
+    private val context: Context,
+    private var patients: List<Patient>
+) : RecyclerView.Adapter<PatientViewHolder>() {
 
-    init {
-        this.patients = patients
+    interface OnItemClickListener {
+        fun onItemClick(position: Int)
+    }
+
+    private var listener: OnItemClickListener? = null
+
+    private val menAvatars = intArrayOf(R.drawable.img_2, R.drawable.img_3, R.drawable.img_6, R.drawable.img_8)
+    private val womenAvatars = intArrayOf(R.drawable.img_1, R.drawable.img_4, R.drawable.img_5, R.drawable.img_7)
+
+    fun setOnItemClickListener(listener: OnItemClickListener?) {
+        this.listener = listener
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientViewHolder {
-        return PatientViewHolder(
-            LayoutInflater.from(context).inflate(R.layout.patient_view, parent, false)
-        )
+        val view = LayoutInflater.from(context).inflate(R.layout.patient_view, parent, false)
+        return PatientViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: PatientViewHolder, position: Int) {
-        val patient: Patient = patients[position]
-        val fullName: String =
-            patient.firstName + " " + patient.middleName + " " + patient.lastName
+        val patient = patients[position]
 
+        val fullName = "${patient.firstName} ${patient.middleName} ${patient.lastName}"
         holder.name.text = fullName
         holder.sex.text = patient.sex
         holder.doctorName.text = patient.mainDoctor
         holder.room.text = patient.room
 
-        if (patient.sex.equals("Мужчина")) {
+        if (patient.sex.equals("Мужчина", ignoreCase = true)) {
             val randomIndex = Random().nextInt(menAvatars.size)
-
             holder.avatar.setImageResource(menAvatars[randomIndex])
         } else {
             val randomIndex = Random().nextInt(womenAvatars.size)
-
             holder.avatar.setImageResource(womenAvatars[randomIndex])
         }
+
         holder.itemView.setOnClickListener {
-            if (listener != null) {
-                listener!!.onItemClick(holder.getAdapterPosition())
-            }
+            listener?.onItemClick(holder.adapterPosition)
         }
     }
 
@@ -67,48 +60,8 @@ class SelectedPatientAdapter(var context: Context, patients: ArrayList<Patient>)
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setRecyclerPatients(patients: ArrayList<Patient>) {
-        val user = FirebaseAuth.getInstance().currentUser
-        val userId = Objects.requireNonNull(user)!!.uid
-
-        val doctorRef = FirebaseDatabase.getInstance().getReference("users/doctors").child(userId)
-
-        doctorRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val doctor: Doctor? = dataSnapshot.getValue(Doctor::class.java)
-                val mainDoctor: String = if (doctor != null) {
-                    val lastName = doctor.lastName ?: ""
-                    val firstName = doctor.firstName?.firstOrNull()?.toString() ?: ""
-                    val middleName = doctor.middleName?.firstOrNull()?.toString() ?: ""
-
-                    "$lastName ${firstName.uppercase()}.${middleName.uppercase()}."
-                } else {
-                    ""
-                }
-
-                val filteredPatients: ArrayList<Patient> = ArrayList<Patient>()
-
-                for (patient in patients) {
-                    if (patient.mainDoctor != null && patient.mainDoctor
-                            .equals(mainDoctor)
-                    ) {
-                        filteredPatients.add(patient)
-                    }
-                }
-
-                this@SelectedPatientAdapter.patients = filteredPatients
-                notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-            }
-        })
-    }
-    interface OnItemClickListener {
-        fun onItemClick(position: Int)
-    }
-
-    fun setOnItemClickListener(listener: OnItemClickListener?) {
-        this.listener = listener
+    fun setRecyclerPatients(newList: List<Patient>?) {
+        this.patients = newList ?: emptyList()
+        notifyDataSetChanged()
     }
 }

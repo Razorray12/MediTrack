@@ -17,6 +17,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import com.example.meditrack.R
 import com.example.meditrack.fragments.AIFragment
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var addedPatientsImageButton: AppCompatImageButton
     private lateinit var profileImageButton: AppCompatImageButton
     private lateinit var aiImageButton: AppCompatImageButton
+    private lateinit var chatImageButton: AppCompatImageButton
 
     private lateinit var searchView: SearchView
     private lateinit var searchView1: SearchView
@@ -58,13 +60,18 @@ class MainActivity : AppCompatActivity() {
 
     private val searchHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
-    private val SEARCH_DELAY = 2000L
+    private val searchDelay = 2000L
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        window.statusBarColor = ContextCompat.getColor(this,R.color.bars)
+        window.navigationBarColor = ContextCompat.getColor(this,R.color.bars)
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = false
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v: View, insets: WindowInsetsCompat ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -107,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         addedPatientsImageButton = findViewById(R.id.added_patients)
         profileImageButton = findViewById(R.id.profile)
         aiImageButton = findViewById(R.id.ai_search)
+        chatImageButton = findViewById(R.id.chat)
 
         addedPatientsImageButton.visibility = if (isDoctor) View.VISIBLE else View.GONE
 
@@ -137,6 +145,7 @@ class MainActivity : AppCompatActivity() {
             profileFragment = supportFragmentManager.findFragmentByTag("profile_fragment") as? ProfileFragment ?: ProfileFragment()
             selectedPatientsFragment = supportFragmentManager.findFragmentByTag("selected_patients_fragment") as? SelectedPatientsFragment ?: SelectedPatientsFragment()
             addPatientFragment = supportFragmentManager.findFragmentByTag("add_patient_fragment") as? AddPatientsFragment ?: AddPatientsFragment()
+            chatFragment = supportFragmentManager.findFragmentByTag("chat_fragment") as? ChatFragment ?: ChatFragment()
 
             val currentFragmentTag = savedInstanceState.getString("current_fragment_tag")
             currentFragment = if (currentFragmentTag != null)
@@ -303,6 +312,34 @@ class MainActivity : AppCompatActivity() {
             }
             applyActiveButtonColors(currentFragment)
         }
+
+        chatImageButton.setOnClickListener {
+            saveButton1.visibility = View.GONE
+            saveButton2.visibility = View.GONE
+            backButton.visibility = View.GONE
+
+            saveButton.visibility = View.GONE
+            searchView.visibility = View.GONE
+            searchView1.visibility = View.GONE
+            nameFragment.text = "Чат"
+
+            if (currentFragment !is ChatFragment) {
+                if (chatFragment.isAdded) {
+                    supportFragmentManager.beginTransaction()
+                        .hide(currentFragment!!)
+                        .show(chatFragment)
+                        .commit()
+                } else {
+                    supportFragmentManager.beginTransaction()
+                        .hide(currentFragment!!)
+                        .add(R.id.fragment_container, chatFragment, "chat_fragment")
+                        .commit()
+                }
+                currentFragment = chatFragment
+                invalidateOptionsMenu()
+            }
+            applyActiveButtonColors(currentFragment)
+        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
@@ -343,6 +380,13 @@ class MainActivity : AppCompatActivity() {
                 menuItemClose1.isVisible = false
             }
             is AIFragment -> {
+                menuItemAdd.isVisible = false
+                menuItemEdit.isVisible = false
+                menuItemClose1.isVisible = false
+                menuItemClose.isVisible = false
+            }
+
+            is ChatFragment -> {
                 menuItemAdd.isVisible = false
                 menuItemEdit.isVisible = false
                 menuItemClose1.isVisible = false
@@ -512,12 +556,14 @@ class MainActivity : AppCompatActivity() {
         addedPatientsImageButton.setColorFilter(gray)
         profileImageButton.setColorFilter(gray)
         aiImageButton.setColorFilter(gray)
+        chatImageButton.setColorFilter(gray)
 
         when (current) {
             is SearchFragment -> patientsImageButton.setColorFilter(white)
             is SelectedPatientsFragment -> addedPatientsImageButton.setColorFilter(white)
             is ProfileFragment -> profileImageButton.setColorFilter(white)
             is AIFragment -> aiImageButton.setColorFilter(white)
+            is ChatFragment -> chatImageButton.setColorFilter(white)
             else -> patientsImageButton.setColorFilter(white)
         }
     }
@@ -533,7 +579,7 @@ class MainActivity : AppCompatActivity() {
             val aiFragment = supportFragmentManager.findFragmentByTag("ai_fragment") as? AIFragment
             aiFragment?.onQueryTextSubmit(query)
         }
-        searchHandler.postDelayed(searchRunnable!!, SEARCH_DELAY)
+        searchHandler.postDelayed(searchRunnable!!, searchDelay)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -552,6 +598,7 @@ class MainActivity : AppCompatActivity() {
         outState.putInt("patients_button_visibility", patientsImageButton.visibility)
         outState.putInt("profile_button_visibility", profileImageButton.visibility)
         outState.putInt("ai_button_visibility", aiImageButton.visibility)
+        outState.putInt("chat_button_visibility",chatImageButton.visibility)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -570,6 +617,7 @@ class MainActivity : AppCompatActivity() {
         patientsImageButton.visibility = savedInstanceState.getInt("patients_button_visibility", View.VISIBLE)
         profileImageButton.visibility = savedInstanceState.getInt("profile_button_visibility", View.VISIBLE)
         aiImageButton.visibility = savedInstanceState.getInt("ai_button_visibility", View.VISIBLE)
+        chatImageButton.visibility = savedInstanceState.getInt("chat_button_visibility", View.VISIBLE)
 
         applyActiveButtonColors(currentFragment)
     }

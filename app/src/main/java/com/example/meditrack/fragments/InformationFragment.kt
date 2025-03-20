@@ -407,6 +407,7 @@ class InformationFragment : Fragment() {
                                     allergies = sAllergies,
                                     admissionDate = originalPatient.admissionDate,
                                     mainDoctor = originalPatient.mainDoctor,
+                                    mainDoctorID = originalPatient.mainDoctorID,
                                     sex = sexString,
                                     vitalSigns = VitalSigns(
                                         sTemperature,

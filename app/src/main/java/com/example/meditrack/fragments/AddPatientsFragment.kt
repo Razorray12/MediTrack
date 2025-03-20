@@ -9,23 +9,32 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import com.example.meditrack.R
 import com.example.meditrack.activities.MainActivity
-import com.example.meditrack.entities.Patient
-import com.example.meditrack.entities.VitalSigns
-import kotlinx.coroutines.*
-import okhttp3.*
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class AddPatientsFragment : Fragment() {
 
@@ -179,6 +188,7 @@ class AddPatientsFragment : Fragment() {
         val sOxygenSaturation = oxygenSaturation?.text.toString().trim()
         val sBloodGlucose = bloodGlucose?.text.toString().trim()
         val mainDoctor = prefs.getString("fio",null)
+        val mainDoctorID = prefs.getString("user_id",null)
 
         if (sFirstName.isEmpty() || sMiddleName.isEmpty() || sLastName.isEmpty() || sRoom.isEmpty()) {
             if (!isAlreadyShown) {
@@ -228,6 +238,7 @@ class AddPatientsFragment : Fragment() {
             put("allergies", sAllergies)
             put("admissionDate", admissionDateStr)
             put("mainDoctor", mainDoctor)
+            put("mainDoctorID", mainDoctorID)
             put("vitalSigns", vitalsObject)
         }
 

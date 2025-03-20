@@ -245,6 +245,7 @@ class SearchFragment : Fragment() {
         val allergies = obj.optString("allergies", null.toString())
         val admissionDate = obj.optString("admissionDate", null.toString())
         val mainDoctor = obj.optString("mainDoctor", null.toString())
+        val mainDoctorID = obj.optString("mainDoctorID", null.toString())
 
         val vitalSignsObj = obj.optJSONObject("vitalSigns")
         val vitalSigns = vitalSignsObj?.let {
@@ -279,6 +280,7 @@ class SearchFragment : Fragment() {
             allergies = allergies,
             admissionDate = admissionDate,
             mainDoctor = mainDoctor,
+            mainDoctorID = mainDoctorID,
             vitalSigns = vitalSigns
         )
     }
