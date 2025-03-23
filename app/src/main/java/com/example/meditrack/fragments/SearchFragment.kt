@@ -98,7 +98,7 @@ class SearchFragment : Fragment() {
         patientUpdatesWebSocket = null
     }
     private fun loadPatientsFromServer(rootView: View) {
-        val url = "http://192.168.0.159:8080/patients"
+        val url = "https://77-221-151-8.sslip.io/patients"
 
         val request = Request.Builder()
             .url(url)
@@ -170,7 +170,7 @@ class SearchFragment : Fragment() {
             return
         }
 
-        val wsUrl = "ws://192.168.0.159:8080/patients/updates"
+        val wsUrl = "wss://77-221-151-8.sslip.io/patients/updates"
         val request = Request.Builder()
             .url(wsUrl)
             .addHeader("Authorization", "Bearer $token")

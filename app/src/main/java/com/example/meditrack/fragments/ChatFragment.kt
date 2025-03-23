@@ -99,7 +99,7 @@ class ChatFragment : Fragment() {
         val prefs = requireActivity().getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE)
         val token = prefs.getString("jwt_token", null) ?: return
 
-        val url = "http://192.168.0.159:8080/chat/history"
+        val url = "wss://77-221-151-8.sslip.io/chat/history"
         val request = Request.Builder()
             .url(url)
             .get()
@@ -157,7 +157,7 @@ class ChatFragment : Fragment() {
             return
         }
 
-        val wsUrl = "ws://192.168.0.159:8080/chat"
+        val wsUrl = "wss://77-221-151-8.sslip.io/chat"
 
         val request = Request.Builder()
             .url(wsUrl)

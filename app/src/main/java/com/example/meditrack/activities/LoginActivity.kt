@@ -77,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
         viewFocus.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
 
-        val baseUrl = "http://192.168.0.159:8080"
+        val baseUrl = "https://77-221-151-8.sslip.io"
         val doctorUrl = "$baseUrl/login/doctor"
         val nurseUrl = "$baseUrl/login/nurse"
 

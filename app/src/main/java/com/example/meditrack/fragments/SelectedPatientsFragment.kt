@@ -93,7 +93,7 @@ class SelectedPatientsFragment : Fragment() {
         val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         val currentDoctorID = prefs.getString("user_id", "") ?: ""
 
-        val url = "http://192.168.0.159:8080/patients"
+        val url = "https://77-221-151-8.sslip.io/patients"
         val request = Request.Builder().url(url).get().build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -138,7 +138,7 @@ class SelectedPatientsFragment : Fragment() {
         val token = prefs.getString("jwt_token", null)
         if (token.isNullOrEmpty()) return
 
-        val wsUrl = "ws://192.168.0.159:8080/patients/updates"
+        val wsUrl = "wss://77-221-151-8.sslip.io/patients/updates"
         val request = Request.Builder()
             .url(wsUrl)
             .addHeader("Authorization", "Bearer $token")

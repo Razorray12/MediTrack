@@ -231,7 +231,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadUserProfile(token: String, userId: String) {
-        val baseUrl = "http://192.168.0.159:8080"
+        val baseUrl = "https://77-221-151-8.sslip.io"
         val endpoint = if (isDoctor) "/doctors" else "/nurses"
         val profileUrl = "$baseUrl$endpoint/$userId"
 
@@ -328,7 +328,7 @@ class ProfileFragment : Fragment() {
             return
         }
 
-        val baseUrl = "http://192.168.0.159:8080"
+        val baseUrl = "https://77-221-151-8.sslip.io"
         val endpoint = if (isDoctor) "/doctors" else "/nurses"
         val updateUrl = "$baseUrl$endpoint/$profId"
 
@@ -390,7 +390,7 @@ class ProfileFragment : Fragment() {
             showToast("Профиль не загружен")
             return
         }
-        val baseUrl = "http://192.168.0.159:8080"
+        val baseUrl = "https://77-221-151-8.sslip.io"
         val endpoint = if (userType.equals("doctor", ignoreCase = true)) "/doctors" else "/nurses"
         val deleteUrl = "$baseUrl$endpoint/$profId"
 

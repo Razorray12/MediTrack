@@ -248,7 +248,7 @@ class AddPatientsFragment : Fragment() {
             return
         }
 
-        val baseUrl = "http://192.168.0.159:8080"
+        val baseUrl = "https://77-221-151-8.sslip.io"
         val url = "$baseUrl/patients"
 
         val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()

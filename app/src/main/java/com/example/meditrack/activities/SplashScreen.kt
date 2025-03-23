@@ -53,7 +53,7 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun verifyTokenOnServer(token: String) {
-        val baseUrl = "http://192.168.0.159:8080"
+        val baseUrl = "https://77-221-151-8.sslip.io"
         val verifyUrl = "$baseUrl/auth/verifyToken"
 
         val request = Request.Builder()
