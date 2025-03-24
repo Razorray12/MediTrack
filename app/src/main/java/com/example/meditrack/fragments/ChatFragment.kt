@@ -141,8 +141,10 @@ class ChatFragment : Fragment() {
                     }
 
                     requireActivity().runOnUiThread {
-                        chatAdapter.setMessages(messages)
-                        binding.recyclerChat.scrollToPosition(chatAdapter.itemCount - 1)
+                        _binding?.let { binding ->
+                            chatAdapter.setMessages(messages)
+                            binding.recyclerChat.scrollToPosition(chatAdapter.itemCount - 1)
+                        }
                     }
                 }
             }
@@ -190,8 +192,10 @@ class ChatFragment : Fragment() {
                 )
 
                 requireActivity().runOnUiThread {
-                    chatAdapter.addMessage(newMsg)
-                    binding.recyclerChat.scrollToPosition(chatAdapter.itemCount - 1)
+                    _binding?.let { binding ->
+                        chatAdapter.addMessage(newMsg)
+                        binding.recyclerChat.scrollToPosition(chatAdapter.itemCount - 1)
+                    }
                 }
             }
 

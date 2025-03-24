@@ -29,18 +29,26 @@ class SplashScreen : AppCompatActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
-        val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+        Handler(Looper.getMainLooper()).postDelayed({
+            val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+            val existingToken = prefs.getString("jwt_token", null)
 
-        val existingToken = prefs.getString("jwt_token", null)
-        if (!existingToken.isNullOrEmpty()) {
-            if (isTokenExpired(existingToken)) {
-                Toast.makeText(this, "Ваша сессия завершена!Войдите снова.", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this@SplashScreen, LoginActivity::class.java))
-
-            } else {
-                verifyTokenOnServer(existingToken)
+            when {
+                existingToken.isNullOrEmpty() -> {
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
+                }
+                isTokenExpired(existingToken) -> {
+                    showToastOnce("Ваша сессия завершена! Войдите снова.")
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
+                }
+                else -> {
+                    verifyTokenOnServer(existingToken)
+                }
             }
-        }
+        }, 1500)
+
     }
 
     private fun isTokenExpired(token: String): Boolean {
@@ -65,6 +73,8 @@ class SplashScreen : AppCompatActivity() {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
                     showToastOnce("Ошибка сети при проверке токена: ${e.message}")
+                    startActivity(Intent(this@SplashScreen, LoginActivity::class.java))
+                    finish()
                 }
             }
 
@@ -74,6 +84,7 @@ class SplashScreen : AppCompatActivity() {
                         runOnUiThread {
                             showToastOnce("Срок действия вашей сессии истёк!")
                             startActivity(Intent(this@SplashScreen, LoginActivity::class.java))
+                            finish()
                         }
                     } else {
                         runOnUiThread {
