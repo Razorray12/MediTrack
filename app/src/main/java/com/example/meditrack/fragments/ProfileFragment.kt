@@ -382,6 +382,14 @@ class ProfileFragment : Fragment() {
         if (isDoctor) {
             specializationEditText.setText(viewModel.specialization.value)
         }
+        emailTextView.text = viewModel.email.value
+        firstNameTextView.text = viewModel.firstName.value
+        lastNameTextView.text = viewModel.lastName.value
+        middleNameTextView.text = viewModel.middleName.value
+        experienceTextView.text = viewModel.experience.value
+        if (isDoctor) {
+            specializationTextView.text = viewModel.specialization.value
+        }
     }
 
     private fun deleteAccount(token: String, userType: String) {
@@ -464,6 +472,7 @@ class ProfileFragment : Fragment() {
                 specializationTextView.visibility = View.GONE
                 specializationEditText.visibility = View.GONE
             }
+            (requireActivity() as MainActivity).closeSaveButton()
         }
     }
 
@@ -503,6 +512,8 @@ class ProfileFragment : Fragment() {
         super.onResume()
         (requireActivity() as MainActivity).setToolbarSaveButtonListener {
             saveProfileData()
+            revertUIToOriginal()
+            hideKeyboard()
             viewModel.isEditing.value = false
         }
     }
