@@ -1,10 +1,14 @@
 package com.example.meditrack.fragments
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.meditrack.adapters.ChatRecyclerViewAdapter
@@ -35,6 +39,12 @@ class ChatFragment : Fragment() {
 
     private var webSocket: WebSocket? = null
     private var userFio: String? = null
+
+    private lateinit var connectivityManager: ConnectivityManager
+    private lateinit var networkCallback: ConnectivityManager.NetworkCallback
+
+    private var hasConnectedBefore = false
+    private var isNetworkLost = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -78,16 +88,29 @@ class ChatFragment : Fragment() {
         super.onResume()
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
-        val prefs = requireActivity().getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE)
+        val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         userFio = prefs.getString("fio", null)
 
         connectToWebSocket()
+
+        connectivityManager = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                requireActivity().runOnUiThread {
+                    Toast.makeText(context, "Подключение к чату...", Toast.LENGTH_SHORT).show()
+                    connectToWebSocket()
+                    loadChatHistory()
+                }
+            }
+        }
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
     }
 
     override fun onPause() {
         super.onPause()
         webSocket?.close(1000, "Fragment paused")
         webSocket = null
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 
     override fun onDestroyView() {
