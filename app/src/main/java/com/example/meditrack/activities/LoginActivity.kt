@@ -104,7 +104,8 @@ class LoginActivity : AppCompatActivity() {
                         .apply()
 
                     runOnUiThread {
-                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
+                        startActivity(intent)
                         finish()
                     }
                 } else {
