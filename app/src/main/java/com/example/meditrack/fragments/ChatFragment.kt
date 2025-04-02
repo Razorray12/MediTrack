@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.meditrack.adapters.ChatRecyclerViewAdapter
@@ -42,9 +41,6 @@ class ChatFragment : Fragment() {
 
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
-
-    private var hasConnectedBefore = false
-    private var isNetworkLost = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -91,13 +87,10 @@ class ChatFragment : Fragment() {
         val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         userFio = prefs.getString("fio", null)
 
-        connectToWebSocket()
-
         connectivityManager = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 requireActivity().runOnUiThread {
-                    Toast.makeText(context, "Подключение к чату...", Toast.LENGTH_SHORT).show()
                     connectToWebSocket()
                     loadChatHistory()
                 }
@@ -105,6 +98,7 @@ class ChatFragment : Fragment() {
         }
         connectivityManager.registerDefaultNetworkCallback(networkCallback)
     }
+
 
     override fun onPause() {
         super.onPause()
@@ -119,7 +113,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun loadChatHistory() {
-        val prefs = requireActivity().getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE)
+        val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         val token = prefs.getString("jwt_token", null) ?: return
 
         val url = "wss://77-221-151-8.sslip.io/chat/history"
@@ -175,7 +169,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun connectToWebSocket() {
-        val prefs = requireActivity().getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE)
+        val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         val token = prefs.getString("jwt_token", null)
 
         if (token.isNullOrEmpty()) {
@@ -201,7 +195,7 @@ class ChatFragment : Fragment() {
                 val senderName = obj.optString("senderName", "")
                 val content = obj.optString("message", "")
 
-                val prefs = requireActivity().getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE)
+                val prefs = requireActivity().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                 val currentUserId = prefs.getString("user_id", "") ?: ""
 
                 val isMe = (senderId == currentUserId)

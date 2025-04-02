@@ -62,6 +62,8 @@ class MainActivity : AppCompatActivity() {
     private var searchRunnable: Runnable? = null
     private val searchDelay = 2000L
 
+    private var previousFragment: Fragment? = null
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,6 +148,11 @@ class MainActivity : AppCompatActivity() {
             addPatientFragment = supportFragmentManager.findFragmentByTag("add_patient_fragment") as? AddPatientsFragment ?: AddPatientsFragment()
             chatFragment = supportFragmentManager.findFragmentByTag("chat_fragment") as? ChatFragment ?: ChatFragment()
 
+            val previousFragmentTag = savedInstanceState.getString("previous_fragment_tag")
+            previousFragment = if (previousFragmentTag != null)
+                supportFragmentManager.findFragmentByTag(previousFragmentTag)
+            else null
+
             val currentFragmentTag = savedInstanceState.getString("current_fragment_tag")
             currentFragment = if (currentFragmentTag != null)
                 supportFragmentManager.findFragmentByTag(currentFragmentTag)
@@ -164,6 +171,8 @@ class MainActivity : AppCompatActivity() {
                         .add(R.id.fragment_container, informationFragment, "information_fragment")
                         .commit()
                 }
+
+                previousFragment = searchFragment
                 supportFragmentManager.beginTransaction()
                     .hide(currentFragment!!)
                     .show(informationFragment)
@@ -185,6 +194,8 @@ class MainActivity : AppCompatActivity() {
                         .add(R.id.fragment_container, informationFragment, "information_fragment")
                         .commit()
                 }
+
+                previousFragment = selectedPatientsFragment
                 supportFragmentManager.beginTransaction()
                     .hide(currentFragment!!)
                     .show(informationFragment)
@@ -488,15 +499,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun closeFragmentInformation() {
-        if (currentFragment !is SearchFragment) {
+        if (currentFragment is InformationFragment && previousFragment != null) {
             supportFragmentManager.beginTransaction()
                 .hide(currentFragment!!)
-                .show(searchFragment!!)
+                .show(previousFragment!!)
                 .commit()
-            currentFragment = searchFragment
+
+            currentFragment = previousFragment
+            previousFragment = null
+
+            when (currentFragment) {
+                is SelectedPatientsFragment -> {
+                    nameFragment.text = "Добавленные"
+
+                    searchView.visibility = View.GONE
+                    searchView1.visibility = View.GONE
+                }
+                is SearchFragment -> {
+                    nameFragment.text = "Пациенты"
+
+                    searchView.visibility = View.VISIBLE
+                    searchView1.visibility = View.GONE
+                }
+            }
             invalidateOptionsMenu()
         }
     }
+
+
     fun closeFragmentAdd() {
         if (currentFragment !is SearchFragment) {
             supportFragmentManager.beginTransaction()
@@ -563,7 +593,16 @@ class MainActivity : AppCompatActivity() {
             is ProfileFragment -> profileImageButton.setColorFilter(white)
             is AIFragment -> aiImageButton.setColorFilter(white)
             is ChatFragment -> chatImageButton.setColorFilter(white)
-            else -> patientsImageButton.setColorFilter(white)
+            is InformationFragment -> {
+                if (previousFragment is SelectedPatientsFragment) {
+                    addedPatientsImageButton.setColorFilter(white)
+                } else {
+                    patientsImageButton.setColorFilter(white)
+                }
+            }
+            else -> {
+                patientsImageButton.setColorFilter(white)
+            }
         }
     }
 
@@ -585,6 +624,9 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         val currentTag = currentFragment?.tag ?: ""
         outState.putString("current_fragment_tag", currentTag)
+        val previousTag = previousFragment?.tag ?: ""
+        outState.putString("previous_fragment_tag", previousTag)
+
         outState.putString("search_query", searchView.query.toString())
         outState.putInt("search_view_visibility", searchView.visibility)
         outState.putInt("search_view1_visibility", searchView1.visibility)

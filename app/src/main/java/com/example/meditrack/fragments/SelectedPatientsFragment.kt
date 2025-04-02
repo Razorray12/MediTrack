@@ -57,11 +57,11 @@ class SelectedPatientsFragment : Fragment() {
         patientAdapter?.setOnItemClickListener(object : SelectedPatientAdapter.OnItemClickListener {
             override fun onItemClick(position: Int) {
 
-                val nextIndex = position + 1
-                if (nextIndex in patients.indices) {
-                    val clickedPatient = patients[nextIndex]
+                if (position in patients.indices) {
+                    val clickedPatient = patients[position]
 
-                    val patientViewModel = ViewModelProvider(requireActivity())[PatientViewModel::class.java]
+                    val patientViewModel =
+                        ViewModelProvider(requireActivity())[PatientViewModel::class.java]
                     patientViewModel.selectPatient(clickedPatient)
 
                     fragmentSwitchListener?.onSwitchToInformationFragment()
