@@ -24,6 +24,7 @@ import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import retrofit2.Retrofit
@@ -53,7 +54,7 @@ class AIFragment : Fragment() {
 
         val apiKey = "sk-2d9c861e51ab41fba84f87ede0f157ff"
 
-         val client = OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val original = chain.request()
 
@@ -63,7 +64,7 @@ class AIFragment : Fragment() {
                 val request = requestBuilder.build()
                 chain.proceed(request)
             }
-             .connectTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .build()
 
@@ -124,7 +125,7 @@ class AIFragment : Fragment() {
         )
         val request = DiseaseRequest("deepseek-chat", messages, 1.0)
         val json = gson.toJson(request)
-        val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
+        val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), json)
 
         return try {
             deepSeekApiService.predictDisease(requestBody)
@@ -143,7 +144,7 @@ class AIFragment : Fragment() {
         )
         val request = DiseaseRequest("deepseek-chat", messages, 1.0)
         val json = gson.toJson(request)
-        val requestBody = RequestBody.create(MediaType.parse("application/json"), json)
+        val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), json)
 
         return try {
             deepSeekApiService.predictDisease(requestBody)
