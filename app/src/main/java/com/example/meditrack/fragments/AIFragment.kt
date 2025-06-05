@@ -326,7 +326,7 @@ class AIFragment : Fragment() {
         val listPopupWindow = ListPopupWindow(requireContext()).apply {
             anchorView = anchor
             setAdapter(adapter)
-            isModal = true
+            isModal = false
         }
 
         anchor.post {

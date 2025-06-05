@@ -58,10 +58,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var searchView1: SearchView
     private lateinit var nameFragment: TextView
 
-    private val searchHandler = android.os.Handler(android.os.Looper.getMainLooper())
-    private var searchRunnable: Runnable? = null
-    private val searchDelay = 2000L
-
     private var previousFragment: Fragment? = null
 
     @SuppressLint("MissingInflatedId")
@@ -98,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         searchView.maxWidth = Int.MAX_VALUE
         searchView1 = findViewById(R.id.ai_search1)
         searchView1.maxWidth = Int.MAX_VALUE
+        
         val hintColor = ContextCompat.getColor(this, R.color.search)
         searchView.setQueryHint(Html.fromHtml("<font color = \"$hintColor\">" + getString(R.string.search) + "</font>"))
         searchView1.setQueryHint(Html.fromHtml("<font color = \"$hintColor\">" + getString(R.string.search) + "</font>"))
@@ -465,13 +462,34 @@ class MainActivity : AppCompatActivity() {
     private fun setupSearchView1() {
         val searchView1 = findViewById<SearchView>(R.id.ai_search1)
 
+        searchView1.post {
+            val closeButton = searchView1.findViewById<View>(androidx.appcompat.R.id.search_close_btn)
+
+            closeButton?.visibility = View.GONE
+            
+            closeButton?.setOnClickListener {
+                searchView1.setQuery("", false)
+                searchView1.clearFocus()
+                searchView1.isIconified = true
+                
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.hideSoftInputFromWindow(searchView1.windowToken, 0)
+                
+                closeButton.visibility = View.GONE
+            }
+        }
+
         searchView1.setOnSearchClickListener {
             val aiFragment = supportFragmentManager.findFragmentByTag("ai_fragment") as? AIFragment
             aiFragment?.showHistoryDropdown(searchView1)
+            
+            searchView1.post {
+                val closeButton = searchView1.findViewById<View>(androidx.appcompat.R.id.search_close_btn)
+                closeButton?.visibility = if (searchView1.query.isNotEmpty()) View.VISIBLE else View.GONE
+            }
         }
 
         searchView1.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-
             override fun onQueryTextSubmit(query: String): Boolean {
                 val aiFragment = supportFragmentManager.findFragmentByTag("ai_fragment") as? AIFragment
                 aiFragment?.onQueryTextSubmit(query)
@@ -479,7 +497,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                scheduleAutoSearch(newText)
+                val closeButton = searchView1.findViewById<View>(androidx.appcompat.R.id.search_close_btn)
+                closeButton?.visibility = if (newText.isNotEmpty()) View.VISIBLE else View.GONE
                 return true
             }
         })
@@ -604,20 +623,6 @@ class MainActivity : AppCompatActivity() {
                 patientsImageButton.setColorFilter(white)
             }
         }
-    }
-
-    private fun scheduleAutoSearch(query: String) {
-        if (query.trim().isEmpty()) {
-
-            searchRunnable?.let { searchHandler.removeCallbacks(it) }
-            return
-        }
-        searchRunnable?.let { searchHandler.removeCallbacks(it) }
-        searchRunnable = Runnable {
-            val aiFragment = supportFragmentManager.findFragmentByTag("ai_fragment") as? AIFragment
-            aiFragment?.onQueryTextSubmit(query)
-        }
-        searchHandler.postDelayed(searchRunnable!!, searchDelay)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
